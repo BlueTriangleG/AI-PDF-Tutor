@@ -9,3 +9,40 @@
 .dark {
   color-scheme: dark;
 }
+
+/* Add styles for markdown content */
+.prose {
+  max-width: none !important;
+}
+
+.prose pre {
+  margin: 0.5em 0;
+  padding: 0.5em;
+  border-radius: 0.375rem;
+  background-color: #1e1e1e;
+}
+
+.prose code {
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: 0.2em 0.4em;
+  border-radius: 0.25em;
+  font-size: 0.875em;
+}
+
+.dark .prose code {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.prose img {
+  margin: 1em 0;
+  border-radius: 0.5em;
+}
+
+.prose a {
+  text-decoration: none;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+}

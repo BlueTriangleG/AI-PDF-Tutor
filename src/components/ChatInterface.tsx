@@ -6,6 +6,11 @@ import { Input } from './ui/Input';
 import { Card, CardHeader, CardBody, CardFooter } from './ui/Card';
 import { Send, Bot, User, Edit2, Plus, X, Pencil } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const DifficultyToggle: React.FC = () => {
   const { explanationLevel, setExplanationLevel } = useChat();
@@ -251,7 +256,67 @@ const Message: React.FC<{ message: MessageType }> = ({ message }) => {
             {message.role === 'assistant' ? 'AI Tutor' : 'You'}
           </span>
         </div>
-        <div className="whitespace-pre-line">{message.content}</div>
+        <div className="whitespace-pre-line prose dark:prose-invert max-w-none prose-sm">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeRaw]}
+            components={{
+              code({node, inline, className, children, ...props}) {
+                const match = /language-(\w+)/.exec(className || '');
+                return !inline && match ? (
+                  <SyntaxHighlighter
+                    style={oneDark}
+                    language={match[1]}
+                    PreTag="div"
+                    {...props}
+                  >
+                    {String(children).replace(/\n$/, '')}
+                  </SyntaxHighlighter>
+                ) : (
+                  <code className={className} {...props}>
+                    {children}
+                  </code>
+                );
+              },
+              p: ({children}) => <p className="mb-2 last:mb-0">{children}</p>,
+              ul: ({children}) => <ul className="list-disc pl-4 mb-2">{children}</ul>,
+              ol: ({children}) => <ol className="list-decimal pl-4 mb-2">{children}</ol>,
+              li: ({children}) => <li className="mb-1">{children}</li>,
+              h1: ({children}) => <h1 className="text-xl font-bold mb-2">{children}</h1>,
+              h2: ({children}) => <h2 className="text-lg font-bold mb-2">{children}</h2>,
+              h3: ({children}) => <h3 className="text-md font-bold mb-2">{children}</h3>,
+              blockquote: ({children}) => (
+                <blockquote className="border-l-4 border-gray-300 dark:border-gray-600 pl-4 italic my-2">
+                  {children}
+                </blockquote>
+              ),
+              a: ({children, href}) => (
+                <a href={href} className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">
+                  {children}
+                </a>
+              ),
+              table: ({children}) => (
+                <div className="overflow-x-auto mb-2">
+                  <table className="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
+                    {children}
+                  </table>
+                </div>
+              ),
+              th: ({children}) => (
+                <th className="px-3 py-2 text-left text-sm font-semibold bg-gray-100 dark:bg-gray-800">
+                  {children}
+                </th>
+              ),
+              td: ({children}) => (
+                <td className="px-3 py-2 text-sm border-t border-gray-200 dark:border-gray-700">
+                  {children}
+                </td>
+              ),
+            }}
+          >
+            {message.content}
+          </ReactMarkdown>
+        </div>
         <div className="text-xs opacity-70 text-right mt-1">
           {new Date(message.timestamp).toLocaleTimeString([], {
             hour: '2-digit',
