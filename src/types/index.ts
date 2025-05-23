@@ -1,3 +1,14 @@
+import { Message } from './Message';
+import { PDFDocument } from './PDFDocument';
+
+export interface ChatSession {
+  id: string;
+  documentId: string;
+  documentName: string;
+  messages: Message[];
+  lastUpdated: Date;
+}
+
 export interface Message {
   id: string;
   role: 'user' | 'assistant';
@@ -27,7 +38,7 @@ export interface PDFHistory {
   totalPages: number;
   lastViewed: Date;
   thumbnail?: string;
-  messages?: Message[];
+  chatSessionId?: string;
   currentPage?: number;
 }
 
