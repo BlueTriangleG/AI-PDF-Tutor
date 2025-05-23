@@ -102,7 +102,7 @@ export const fetchAvailableModels = async (apiKey: string): Promise<OpenAI.Model
 };
 
 export const testConnection = async (apiKey: string, model: string): Promise<boolean> => {
-  if (!model || !model.startsWith('gpt-')) {
+  if (!model) {
     console.error('Invalid model ID:', model);
     return false;
   }
