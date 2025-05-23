@@ -79,9 +79,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
     setIsRefreshingModels(false);
   };
 
-  const filteredModels = availableModels.filter(model => 
-    model.id.startsWith('gpt-') && !model.id.includes('instruct')
-  );
+  const filteredModels = Array.isArray(availableModels) 
+    ? availableModels.filter(model => model.id.startsWith('gpt-') && !model.id.includes('instruct'))
+    : [];
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
