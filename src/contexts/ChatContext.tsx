@@ -51,19 +51,19 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshModels = async () => {
     if (!apiKey) return;
     try {
-      const models = await fetchAvailableModels(apiKey);
+      const response = await fetchAvailableModels(apiKey);
       
-      // Ensure models is an array before setting state
-      if (Array.isArray(models)) {
-        setAvailableModels(models);
+      // Check if response has the data property and it's an array
+      if (response && response.body && Array.isArray(response.body.data)) {
+        setAvailableModels(response.body.data);
         
         // Check if the currently selected model exists in the available models
-        const modelExists = models.some((model) => model.id === selectedModel);
+        const modelExists = response.body.data.some((model) => model.id === selectedModel);
         if (!modelExists) {
           handleSetSelectedModel('gpt-3.5-turbo');
         }
       } else {
-        console.error('Fetched models is not an array:', models);
+        console.error('Invalid models response structure:', response);
         setAvailableModels([]); // Reset to empty array if invalid data
       }
     } catch (error) {
