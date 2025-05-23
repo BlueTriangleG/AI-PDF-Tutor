@@ -329,7 +329,7 @@ const Message: React.FC<{ message: MessageType }> = ({ message }) => {
 };
 
 export const ChatInterface: React.FC = () => {
-  const { messages = [], isLoading, addMessage } = useChat();
+  const { messages, isLoading, addMessage } = useChat();
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
@@ -360,7 +360,7 @@ export const ChatInterface: React.FC = () => {
       </CardHeader>
       
       <CardBody className="flex-1 min-h-0 overflow-y-auto p-4">
-        {!messages || messages.length === 0 ? (
+        {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center">
             <Bot className="h-16 w-16 text-blue-500 mb-4" />
             <h3 className="text-lg font-medium mb-2">Your AI Tutor is Ready</h3>

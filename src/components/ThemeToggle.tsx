@@ -33,9 +33,9 @@ export const ThemeToggle: React.FC = () => {
       aria-label="Toggle theme"
     >
       {theme === 'dark' ? (
-        <Moon className="h-4 w-4 text-gray-800 dark:text-gray-200" />
+        <Moon className="h-4 w-4" />
       ) : (
-        <Sun className="h-4 w-4 text-gray-800 dark:text-gray-200" />
+        <Sun className="h-4 w-4" />
       )}
     </Button>
   );

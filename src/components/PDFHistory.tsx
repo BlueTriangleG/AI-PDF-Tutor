@@ -1,13 +1,13 @@
 import React from 'react';
 import { usePDF } from '../contexts/PDFContext';
 import { useChat } from '../contexts/ChatContext';
-import { Clock, File, MessageSquare } from 'lucide-react';
+import { Clock, File } from 'lucide-react';
 import { Card } from './ui/Card';
 import { processPDFFile } from '../utils/pdfUtils';
 
 export const PDFHistory: React.FC = () => {
   const { history, setDocument, setCurrentPage } = usePDF();
-  const { createNewSession, sessions } = useChat();
+  const { setMessages } = useChat();
 
   const handleDocumentClick = async (doc: { id: string; name: string; url: string }) => {
     try {
@@ -29,8 +29,14 @@ export const PDFHistory: React.FC = () => {
       // Set the document first to ensure proper initialization
       setDocument(processedDocument);
 
-      // Create a new chat session or restore existing one
-      createNewSession(doc.id, doc.name);
+      // Restore the chat messages if they exist
+      if (historyDoc.messages) {
+        const restoredMessages = historyDoc.messages.map(msg => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        }));
+        setMessages(restoredMessages);
+      }
 
       // Restore the current page if it exists
       if (historyDoc.currentPage) {
@@ -52,40 +58,30 @@ export const PDFHistory: React.FC = () => {
         Recent Documents
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {history.map((doc) => {
-          const docSessions = sessions.filter(s => s.documentId === doc.id);
-          
-          return (
-            <Card 
-              key={doc.id} 
-              className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
-              onClick={() => handleDocumentClick(doc)}
-            >
-              <div className="flex items-start space-x-3">
-                <div className="flex-shrink-0">
-                  <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                    <File className="h-5 w-5 text-blue-500 dark:text-blue-400" />
-                  </div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                    {doc.name}
-                  </h4>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {doc.totalPages} pages • Last viewed{' '}
-                    {new Date(doc.lastViewed).toLocaleDateString()}
-                  </p>
-                  {docSessions.length > 0 && (
-                    <div className="flex items-center mt-2 text-xs text-gray-500 dark:text-gray-400">
-                      <MessageSquare className="h-3 w-3 mr-1" />
-                      {docSessions.length} chat session{docSessions.length !== 1 ? 's' : ''}
-                    </div>
-                  )}
+        {history.map((doc) => (
+          <Card 
+            key={doc.id} 
+            className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+            onClick={() => handleDocumentClick(doc)}
+          >
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                  <File className="h-5 w-5 text-blue-500 dark:text-blue-400" />
                 </div>
               </div>
-            </Card>
-          );
-        })}
+              <div className="flex-1 min-w-0">
+                <h4 className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  {doc.name}
+                </h4>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {doc.totalPages} pages • Last viewed{' '}
+                  {new Date(doc.lastViewed).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+          </Card>
+        ))}
       </div>
     </div>
   );
