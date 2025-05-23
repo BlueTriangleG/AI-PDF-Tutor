@@ -4,7 +4,8 @@ import { Message as MessageType, SystemPromptTemplate } from '../types';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { Card, CardHeader, CardBody, CardFooter } from './ui/Card';
-import { Send, Bot, User, Edit2, Check, X } from 'lucide-react';
+import { Send, Bot, User, Edit2, Plus, X } from 'lucide-react';
+import * as Dialog from '@radix-ui/react-dialog';
 
 const DifficultyToggle: React.FC = () => {
   const { explanationLevel, setExplanationLevel } = useChat();
@@ -48,78 +49,111 @@ const DifficultyToggle: React.FC = () => {
   );
 };
 
-const PromptSelector: React.FC = () => {
+const TutorSelector: React.FC = () => {
   const { systemPrompt, setSystemPrompt, availablePrompts, addCustomPrompt } = useChat();
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedPrompt, setEditedPrompt] = useState(systemPrompt.prompt);
+  const [isOpen, setIsOpen] = useState(false);
+  const [newPromptName, setNewPromptName] = useState('');
+  const [newPromptContent, setNewPromptContent] = useState('');
   const [selectedPromptId, setSelectedPromptId] = useState(systemPrompt.id);
-  
-  const handlePromptChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newPrompt = availablePrompts.find(p => p.id === e.target.value);
-    if (newPrompt) {
-      setSelectedPromptId(newPrompt.id);
-      setSystemPrompt(newPrompt);
-      setEditedPrompt(newPrompt.prompt);
-    }
-  };
 
   const handleSavePrompt = () => {
+    if (!newPromptName.trim() || !newPromptContent.trim()) return;
+    
     const customPrompt: SystemPromptTemplate = {
       id: `custom-${Date.now()}`,
-      name: 'Custom Tutor',
-      prompt: editedPrompt
+      name: newPromptName,
+      prompt: newPromptContent
     };
     addCustomPrompt(customPrompt);
     setSystemPrompt(customPrompt);
-    setIsEditing(false);
+    setNewPromptName('');
+    setNewPromptContent('');
+    setIsOpen(false);
+  };
+
+  const handlePromptSelect = (promptId: string) => {
+    const prompt = availablePrompts.find(p => p.id === promptId);
+    if (prompt) {
+      setSystemPrompt(prompt);
+      setSelectedPromptId(promptId);
+    }
   };
 
   return (
-    <div className="flex flex-col space-y-2 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-      <div className="flex items-center justify-between">
-        <select
-          value={selectedPromptId}
-          onChange={handlePromptChange}
-          className="text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md px-2 py-1"
-          disabled={isEditing}
-        >
-          {availablePrompts.map(prompt => (
-            <option key={prompt.id} value={prompt.id}>
-              {prompt.name}
-            </option>
-          ))}
-        </select>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setIsEditing(!isEditing)}
-          className="ml-2"
-        >
-          {isEditing ? <X className="h-4 w-4" /> : <Edit2 className="h-4 w-4" />}
-        </Button>
-      </div>
-      
-      {isEditing && (
-        <div className="space-y-2">
-          <textarea
-            value={editedPrompt}
-            onChange={(e) => setEditedPrompt(e.target.value)}
-            className="w-full h-24 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md p-2"
-            placeholder="Enter custom prompt..."
-          />
-          <div className="flex justify-end">
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleSavePrompt}
-              disabled={!editedPrompt.trim()}
-            >
-              <Check className="h-4 w-4 mr-1" />
-              Save Custom Prompt
-            </Button>
-          </div>
-        </div>
-      )}
+    <div className="flex items-center space-x-2">
+      <span className="font-medium text-gray-900 dark:text-white">
+        {systemPrompt.name}
+      </span>
+      <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+        <Dialog.Trigger asChild>
+          <Button variant="ghost" size="sm" className="w-8 h-8 p-0">
+            <Edit2 className="h-4 w-4" />
+          </Button>
+        </Dialog.Trigger>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+          <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-4">
+              <Dialog.Title className="text-lg font-semibold">
+                Select AI Tutor
+              </Dialog.Title>
+              <Dialog.Close asChild>
+                <button className="text-gray-400 hover:text-gray-500">
+                  <X className="h-4 w-4" />
+                </button>
+              </Dialog.Close>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                {availablePrompts.map((prompt) => (
+                  <div
+                    key={prompt.id}
+                    className={`p-3 rounded-md border cursor-pointer transition-colors ${
+                      selectedPromptId === prompt.id
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
+                        : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                    onClick={() => handlePromptSelect(prompt.id)}
+                  >
+                    <div className="font-medium mb-1">{prompt.name}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                      {prompt.prompt}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                <h3 className="text-sm font-medium mb-2">Create Custom Tutor</h3>
+                <div className="space-y-3">
+                  <Input
+                    placeholder="Tutor Name"
+                    value={newPromptName}
+                    onChange={(e) => setNewPromptName(e.target.value)}
+                    fullWidth
+                  />
+                  <textarea
+                    className="w-full h-24 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900"
+                    placeholder="System prompt content..."
+                    value={newPromptContent}
+                    onChange={(e) => setNewPromptContent(e.target.value)}
+                  />
+                  <Button
+                    variant="primary"
+                    fullWidth
+                    onClick={handleSavePrompt}
+                    disabled={!newPromptName.trim() || !newPromptContent.trim()}
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Custom Tutor
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </div>
   );
 };
@@ -185,12 +219,9 @@ export const ChatInterface: React.FC = () => {
   return (
     <Card className="h-full flex flex-col overflow-hidden">
       <CardHeader className="flex-shrink-0 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex flex-col space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">AI Tutor Chat</h2>
-            <DifficultyToggle />
-          </div>
-          <PromptSelector />
+        <div className="flex items-center justify-between">
+          <TutorSelector />
+          <DifficultyToggle />
         </div>
       </CardHeader>
       
