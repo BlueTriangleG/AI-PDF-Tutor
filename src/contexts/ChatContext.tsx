@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Message, ExplanationLevel, SystemPromptTemplate, defaultSystemPrompts, GPTModel } from '../types';
+import { Message, ExplanationLevel, SystemPromptTemplate, defaultSystemPrompts } from '../types';
 import { generateAIResponse, testConnection, fetchAvailableModels } from '../utils/pdfUtils';
 import OpenAI from 'openai';
 
@@ -9,8 +9,8 @@ interface ChatContextType {
   explanationLevel: ExplanationLevel;
   apiKey: string;
   systemPrompt: SystemPromptTemplate;
-  selectedModel: GPTModel;
-  availableModels: OpenAI.ModelsPage;
+  selectedModel: string;
+  availableModels: OpenAI.Model[];
   availablePrompts: SystemPromptTemplate[];
   addMessage: (content: string, role: 'user' | 'assistant') => Promise<void>;
   clearMessages: () => void;
@@ -42,7 +42,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const savedModel = localStorage.getItem('selected_model');
     return savedModel || 'gpt-3.5-turbo';
   });
-  const [availableModels, setAvailableModels] = useState<OpenAI.ModelsPage>([]);
+  const [availableModels, setAvailableModels] = useState<OpenAI.Model[]>([]);
   const [availablePrompts, setAvailablePrompts] = useState<SystemPromptTemplate[]>(() => {
     const savedPrompts = localStorage.getItem('custom_prompts');
     return savedPrompts ? [...defaultSystemPrompts, ...JSON.parse(savedPrompts)] : defaultSystemPrompts;
@@ -52,23 +52,21 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!apiKey) return;
     try {
       const response = await fetchAvailableModels(apiKey);
-      
-      // Check if response has the data property and it's an array
-      if (response && response.body && Array.isArray(response.body.data)) {
-        setAvailableModels(response.body.data);
+      if (response && Array.isArray(response.data)) {
+        setAvailableModels(response.data);
         
         // Check if the currently selected model exists in the available models
-        const modelExists = response.body.data.some((model) => model.id === selectedModel);
+        const modelExists = response.data.some((model) => model.id === selectedModel);
         if (!modelExists) {
           handleSetSelectedModel('gpt-3.5-turbo');
         }
       } else {
         console.error('Invalid models response structure:', response);
-        setAvailableModels([]); // Reset to empty array if invalid data
+        setAvailableModels([]);
       }
     } catch (error) {
       console.error('Failed to fetch models:', error);
-      setAvailableModels([]); // Reset to empty array on error
+      setAvailableModels([]);
     }
   };
 
@@ -176,7 +174,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const testApiConnection = async (key: string, model: string) => {
     try {
-      if (!model || !Array.isArray(availableModels) || !availableModels.some(m => m.id === model)) {
+      if (!model || !availableModels.some(m => m.id === model)) {
         return false;
       }
       return await testConnection(key, model);
