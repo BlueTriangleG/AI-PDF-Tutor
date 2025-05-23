@@ -18,10 +18,7 @@ export const PDFProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [document, setDocumentState] = useState<PDFDocument | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [currentPage, setCurrentPageState] = useState<number>(1);
-  const [history, setHistory] = useState<PDFHistory[]>(() => {
-    const savedHistory = localStorage.getItem('pdf_history');
-    return savedHistory ? JSON.parse(savedHistory) : [];
-  });
+  const [history, setHistory] = useState<PDFHistory[]>([]);
 
   const setDocument = (doc: PDFDocument | null) => {
     if (doc) {
@@ -77,6 +74,20 @@ export const PDFProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       document.currentPage = currentPage;
     }
   }, [currentPage, document]);
+
+  // Load history from localStorage
+  useEffect(() => {
+    const savedHistory = localStorage.getItem('pdf_history');
+    if (savedHistory) {
+      try {
+        const parsedHistory = JSON.parse(savedHistory);
+        setHistory(parsedHistory);
+      } catch (error) {
+        console.error('Failed to parse PDF history from localStorage:', error);
+        setHistory([]);
+      }
+    }
+  }, []);
 
   // Save history to localStorage
   useEffect(() => {
