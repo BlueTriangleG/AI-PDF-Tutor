@@ -1,0 +1,214 @@
+import React, { useState } from 'react';
+import * as Dialog from '@radix-ui/react-dialog';
+import { Settings, X, Plus, Info } from 'lucide-react';
+import { Button } from './ui/Button';
+import { Input } from './ui/Input';
+import { SystemPromptTemplate, availableModels } from '../types';
+import { useChat } from '../contexts/ChatContext';
+
+interface SettingsModalProps {
+  apiKey: string;
+  onSaveApiKey: (key: string) => void;
+}
+
+export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiKey }) => {
+  const { 
+    systemPrompt, 
+    setSystemPrompt, 
+    availablePrompts, 
+    addCustomPrompt,
+    selectedModel,
+    setSelectedModel
+  } = useChat();
+  
+  const [isOpen, setIsOpen] = useState(false);
+  const [tempApiKey, setTempApiKey] = useState(apiKey);
+  const [selectedPromptId, setSelectedPromptId] = useState(systemPrompt.id);
+  const [selectedModelId, setSelectedModelId] = useState(selectedModel.id);
+  const [isAddingPrompt, setIsAddingPrompt] = useState(false);
+  const [newPromptName, setNewPromptName] = useState('');
+  const [newPromptContent, setNewPromptContent] = useState('');
+  const [showModelInfo, setShowModelInfo] = useState<string | null>(null);
+
+  const handleSave = () => {
+    onSaveApiKey(tempApiKey);
+    const selectedPrompt = availablePrompts.find(p => p.id === selectedPromptId);
+    if (selectedPrompt) {
+      setSystemPrompt(selectedPrompt);
+    }
+    const newModel = availableModels.find(m => m.id === selectedModelId);
+    if (newModel) {
+      setSelectedModel(newModel);
+    }
+    setIsOpen(false);
+  };
+
+  const handleAddPrompt = () => {
+    if (newPromptName && newPromptContent) {
+      addCustomPrompt({
+        id: Date.now().toString(),
+        name: newPromptName,
+        prompt: newPromptContent
+      });
+      setNewPromptName('');
+      setNewPromptContent('');
+      setIsAddingPrompt(false);
+    }
+  };
+
+  return (
+    <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+      <Dialog.Trigger asChild>
+        <Button variant="ghost" size="sm" className="w-9 h-9 p-0">
+          <Settings className="h-4 w-4" />
+        </Button>
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <div className="flex items-center justify-between mb-4">
+            <Dialog.Title className="text-lg font-semibold">Settings</Dialog.Title>
+            <Dialog.Close asChild>
+              <button className="text-gray-400 hover:text-gray-500">
+                <X className="h-4 w-4" />
+              </button>
+            </Dialog.Close>
+          </div>
+          
+          <div className="space-y-6">
+            <div>
+              <label htmlFor="apiKey" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                OpenAI API Key
+              </label>
+              <Input
+                id="apiKey"
+                type="password"
+                value={tempApiKey}
+                onChange={(e) => setTempApiKey(e.target.value)}
+                placeholder="sk-..."
+                fullWidth
+              />
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Your API key is stored locally and never sent to our servers.
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                GPT Model
+              </label>
+              <div className="space-y-2">
+                {availableModels.map((model) => (
+                  <div
+                    key={model.id}
+                    className={`p-3 rounded-md border cursor-pointer transition-colors relative ${
+                      selectedModelId === model.id
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
+                        : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                    onClick={() => setSelectedModelId(model.id)}
+                    onMouseEnter={() => setShowModelInfo(model.id)}
+                    onMouseLeave={() => setShowModelInfo(null)}
+                  >
+                    <div className="font-medium mb-1">{model.name}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      {model.description}
+                    </div>
+                    {showModelInfo === model.id && (
+                      <div className="absolute left-full ml-2 w-64 p-3 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+                        <div className="text-sm space-y-2">
+                          <p><strong>Context Window:</strong> {model.contextWindow?.toLocaleString()} tokens</p>
+                          <p><strong>Training Cutoff:</strong> {model.trainingCutoff}</p>
+                          <p><strong>Pricing:</strong></p>
+                          <ul className="list-disc pl-4">
+                            <li>Input: {model.inputPricing}</li>
+                            <li>Output: {model.outputPricing}</li>
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+                    <button 
+                      className="absolute top-2 right-2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowModelInfo(showModelInfo === model.id ? null : model.id);
+                      }}
+                    >
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                AI Tutor Personality
+              </label>
+              <div className="space-y-2">
+                {availablePrompts.map((prompt) => (
+                  <div
+                    key={prompt.id}
+                    className={`p-3 rounded-md border cursor-pointer transition-colors ${
+                      selectedPromptId === prompt.id
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
+                        : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                    onClick={() => setSelectedPromptId(prompt.id)}
+                  >
+                    <div className="font-medium mb-1">{prompt.name}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                      {prompt.prompt}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {!isAddingPrompt ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  onClick={() => setIsAddingPrompt(true)}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Custom Prompt
+                </Button>
+              ) : (
+                <div className="mt-2 space-y-2">
+                  <Input
+                    placeholder="Prompt Name"
+                    value={newPromptName}
+                    onChange={(e) => setNewPromptName(e.target.value)}
+                    fullWidth
+                  />
+                  <textarea
+                    className="w-full h-24 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900"
+                    placeholder="System prompt content..."
+                    value={newPromptContent}
+                    onChange={(e) => setNewPromptContent(e.target.value)}
+                  />
+                  <div className="flex space-x-2">
+                    <Button variant="outline" size="sm" onClick={() => setIsAddingPrompt(false)}>
+                      Cancel
+                    </Button>
+                    <Button variant="primary" size="sm" onClick={handleAddPrompt}>
+                      Add Prompt
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div className="mt-6 flex justify-end space-x-2">
+            <Dialog.Close asChild>
+              <Button variant="outline">Cancel</Button>
+            </Dialog.Close>
+            <Button variant="primary" onClick={handleSave}>Save Changes</Button>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+};
