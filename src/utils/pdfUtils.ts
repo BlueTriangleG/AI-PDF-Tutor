@@ -92,7 +92,7 @@ export const generateAIResponse = async (
 };
 
 export const fetchAvailableModels = async (apiKey: string): Promise<OpenAI.ModelsPage> => {
-  const client = new OpenAI({ apiKey });
+  const client = new OpenAI({ apiKey, dangerouslyAllowBrowser: true });
   try {
     return await client.models.list();
   } catch (error) {
@@ -103,7 +103,7 @@ export const fetchAvailableModels = async (apiKey: string): Promise<OpenAI.Model
 
 export const testConnection = async (apiKey: string, model: string): Promise<boolean> => {
   try {
-    const client = new OpenAI({ apiKey });
+    const client = new OpenAI({ apiKey, dangerouslyAllowBrowser: true });
     const response = await client.chat.completions.create({
       model,
       messages: [{ role: 'user', content: 'Test connection' }],
