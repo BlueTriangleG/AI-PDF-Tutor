@@ -147,7 +147,7 @@ const TutorSelector: React.FC = () => {
                       }`}
                     >
                       <div 
-                        className="cursor-pointer"
+                        className="cursor-pointer pr-8"
                         onClick={() => handlePromptSelect(prompt.id)}
                       >
                         <div className="font-medium mb-1">{prompt.name}</div>
@@ -155,38 +155,34 @@ const TutorSelector: React.FC = () => {
                           {prompt.prompt}
                         </div>
                       </div>
-                      {prompt.id.startsWith('custom-') && (
-                        <button
-                          className="absolute top-2 right-2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                          onClick={() => handleEditPrompt(prompt)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </button>
-                      )}
+                      <button
+                        className="absolute top-2 right-2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        onClick={() => handleEditPrompt(prompt)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
                     </div>
                   ))}
                 </div>
               )}
               
-              <div className={editingPrompt ? '' : 'border-t border-gray-200 dark:border-gray-700 pt-4'}>
-                <h3 className="text-sm font-medium mb-2">
-                  {editingPrompt ? 'Edit Tutor' : 'Create Custom Tutor'}
-                </h3>
-                <div className="space-y-3">
-                  <Input
-                    placeholder="Tutor Name"
-                    value={newPromptName}
-                    onChange={(e) => setNewPromptName(e.target.value)}
-                    fullWidth
-                  />
-                  <textarea
-                    className="w-full h-24 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900"
-                    placeholder="System prompt content..."
-                    value={newPromptContent}
-                    onChange={(e) => setNewPromptContent(e.target.value)}
-                  />
-                  <div className="flex space-x-2">
-                    {editingPrompt && (
+              {editingPrompt ? (
+                <div>
+                  <h3 className="text-sm font-medium mb-2">Edit Tutor</h3>
+                  <div className="space-y-3">
+                    <Input
+                      placeholder="Tutor Name"
+                      value={newPromptName}
+                      onChange={(e) => setNewPromptName(e.target.value)}
+                      fullWidth
+                    />
+                    <textarea
+                      className="w-full h-24 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900"
+                      placeholder="System prompt content..."
+                      value={newPromptContent}
+                      onChange={(e) => setNewPromptContent(e.target.value)}
+                    />
+                    <div className="flex space-x-2">
                       <Button
                         variant="outline"
                         fullWidth
@@ -194,23 +190,45 @@ const TutorSelector: React.FC = () => {
                       >
                         Cancel
                       </Button>
-                    )}
+                      <Button
+                        variant="primary"
+                        fullWidth
+                        onClick={handleSavePrompt}
+                        disabled={!newPromptName.trim() || !newPromptContent.trim()}
+                      >
+                        Save Changes
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                  <h3 className="text-sm font-medium mb-2">Create Custom Tutor</h3>
+                  <div className="space-y-3">
+                    <Input
+                      placeholder="Tutor Name"
+                      value={newPromptName}
+                      onChange={(e) => setNewPromptName(e.target.value)}
+                      fullWidth
+                    />
+                    <textarea
+                      className="w-full h-24 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900"
+                      placeholder="System prompt content..."
+                      value={newPromptContent}
+                      onChange={(e) => setNewPromptContent(e.target.value)}
+                    />
                     <Button
                       variant="primary"
                       fullWidth
                       onClick={handleSavePrompt}
                       disabled={!newPromptName.trim() || !newPromptContent.trim()}
                     >
-                      {editingPrompt ? 'Save Changes' : (
-                        <>
-                          <Plus className="h-4 w-4 mr-1" />
-                          Add Custom Tutor
-                        </>
-                      )}
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add Custom Tutor
                     </Button>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </Dialog.Content>
         </Dialog.Portal>
