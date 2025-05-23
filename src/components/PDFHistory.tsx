@@ -9,7 +9,7 @@ export const PDFHistory: React.FC = () => {
   const { history, setDocument, setCurrentPage } = usePDF();
   const { setMessages } = useChat();
 
-  const handleDocumentClick = async (doc: { id: string; name: string; url: string; messages?: any[] }) => {
+  const handleDocumentClick = async (doc: { id: string; name: string; url: string; messages?: any[]; currentPage?: number }) => {
     try {
       // Find the document in history
       const historyDoc = history.find(h => h.id === doc.id);
@@ -18,16 +18,14 @@ export const PDFHistory: React.FC = () => {
         return;
       }
 
-      // Create a new blob URL if the old one is invalid
-      let url = doc.url;
-      if (!url.startsWith('blob:')) {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Failed to fetch document');
-        const blob = await response.blob();
-        url = URL.createObjectURL(blob);
-      }
+      // Create a new blob URL from the stored URL
+      let response = await fetch(doc.url);
+      if (!response.ok) throw new Error('Failed to fetch document');
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
 
-      const file = new File([await fetch(url).then(r => r.blob())], doc.name, { type: 'application/pdf' });
+      // Create a File object from the blob
+      const file = new File([blob], doc.name, { type: 'application/pdf' });
 
       // Process the PDF file
       const processedDocument = await processPDFFile(file);
@@ -43,7 +41,7 @@ export const PDFHistory: React.FC = () => {
       setDocument(updatedDocument);
 
       // Restore the chat messages if they exist
-      if (historyDoc.messages) {
+      if (historyDoc.messages && historyDoc.messages.length > 0) {
         const restoredMessages = historyDoc.messages.map(msg => ({
           ...msg,
           timestamp: new Date(msg.timestamp)
