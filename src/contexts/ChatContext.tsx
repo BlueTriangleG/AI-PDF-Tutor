@@ -39,7 +39,8 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return savedPrompt ? JSON.parse(savedPrompt) : defaultSystemPrompts[0];
   });
   const [selectedModel, setSelectedModel] = useState<string>(() => {
-    return localStorage.getItem('selected_model') || 'gpt-4';
+    const savedModel = localStorage.getItem('selected_model');
+    return savedModel || 'gpt-3.5-turbo';
   });
   const [availableModels, setAvailableModels] = useState<OpenAI.ModelsPage>([]);
   const [availablePrompts, setAvailablePrompts] = useState<SystemPromptTemplate[]>(() => {
@@ -52,6 +53,13 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const models = await fetchAvailableModels(apiKey);
       setAvailableModels(models);
+      
+      // If the currently selected model is not in the available models list,
+      // switch to gpt-3.5-turbo as a fallback
+      const modelExists = models.some((model) => model.id === selectedModel);
+      if (!modelExists) {
+        handleSetSelectedModel('gpt-3.5-turbo');
+      }
     } catch (error) {
       console.error('Failed to fetch models:', error);
     }
@@ -161,6 +169,9 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const testApiConnection = async (key: string, model: string) => {
     try {
+      if (!model || !availableModels.some(m => m.id === model)) {
+        return false;
+      }
       return await testConnection(key, model);
     } catch (error) {
       return false;
