@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
-import { Message, ExplanationLevel, SystemPromptTemplate, defaultSystemPrompts, GPTModel, availableModels } from '../types';
+import { Message, ExplanationLevel, SystemPromptTemplate, defaultSystemPrompts } from '../types';
 import { generateAIResponse } from '../utils/pdfUtils';
 
 interface ChatContextType {
@@ -8,14 +8,12 @@ interface ChatContextType {
   explanationLevel: ExplanationLevel;
   apiKey: string;
   systemPrompt: SystemPromptTemplate;
-  selectedModel: GPTModel;
   availablePrompts: SystemPromptTemplate[];
   addMessage: (content: string, role: 'user' | 'assistant') => Promise<void>;
   clearMessages: () => void;
   setExplanationLevel: (level: ExplanationLevel) => void;
   setApiKey: (key: string) => void;
   setSystemPrompt: (prompt: SystemPromptTemplate) => void;
-  setSelectedModel: (model: GPTModel) => void;
   addCustomPrompt: (prompt: SystemPromptTemplate) => void;
   generatePageExplanation: (pageText: string, pageNumber: number) => void;
   setMessages: (messages: Message[]) => void;
@@ -33,10 +31,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [systemPrompt, setSystemPrompt] = useState<SystemPromptTemplate>(() => {
     const savedPrompt = localStorage.getItem('system_prompt');
     return savedPrompt ? JSON.parse(savedPrompt) : defaultSystemPrompts[0];
-  });
-  const [selectedModel, setSelectedModel] = useState<GPTModel>(() => {
-    const savedModel = localStorage.getItem('selected_model');
-    return savedModel ? JSON.parse(savedModel) : availableModels[2]; // Default to GPT-3.5 Turbo
   });
   const [availablePrompts, setAvailablePrompts] = useState<SystemPromptTemplate[]>(() => {
     const savedPrompts = localStorage.getItem('custom_prompts');
@@ -56,7 +50,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (role === 'user') {
       setIsLoading(true);
       try {
-        const response = await generateAIResponse(content, explanationLevel, apiKey, systemPrompt.prompt, selectedModel.id);
+        const response = await generateAIResponse(content, explanationLevel, apiKey, systemPrompt.prompt);
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
@@ -96,7 +90,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setMessages((prevMessages) => [...prevMessages, initialMessage]);
     
     try {
-      const response = await generateAIResponse(pageText, explanationLevel, apiKey, systemPrompt.prompt, selectedModel.id);
+      const response = await generateAIResponse(pageText, explanationLevel, apiKey, systemPrompt.prompt);
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
@@ -122,11 +116,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('system_prompt', JSON.stringify(prompt));
   };
 
-  const handleSetSelectedModel = (model: GPTModel) => {
-    setSelectedModel(model);
-    localStorage.setItem('selected_model', JSON.stringify(model));
-  };
-
   const addCustomPrompt = (prompt: SystemPromptTemplate) => {
     const newPrompt = {
       ...prompt,
@@ -147,14 +136,12 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         explanationLevel,
         apiKey,
         systemPrompt,
-        selectedModel,
         availablePrompts,
         addMessage,
         clearMessages,
         setExplanationLevel,
         setApiKey: handleSetApiKey,
         setSystemPrompt: handleSetSystemPrompt,
-        setSelectedModel: handleSetSelectedModel,
         addCustomPrompt,
         generatePageExplanation,
         setMessages,

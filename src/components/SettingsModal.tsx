@@ -3,7 +3,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { Settings, X, Plus, Trash2 } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
-import { SystemPromptTemplate, availableModels } from '../types';
+import { SystemPromptTemplate } from '../types';
 import { useChat } from '../contexts/ChatContext';
 
 interface SettingsModalProps {
@@ -12,19 +12,10 @@ interface SettingsModalProps {
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiKey }) => {
-  const { 
-    systemPrompt, 
-    setSystemPrompt, 
-    availablePrompts, 
-    addCustomPrompt,
-    selectedModel,
-    setSelectedModel
-  } = useChat();
-  
+  const { systemPrompt, setSystemPrompt, availablePrompts, addCustomPrompt } = useChat();
   const [isOpen, setIsOpen] = useState(false);
   const [tempApiKey, setTempApiKey] = useState(apiKey);
   const [selectedPromptId, setSelectedPromptId] = useState(systemPrompt.id);
-  const [selectedModelId, setSelectedModelId] = useState(selectedModel.id);
   const [isAddingPrompt, setIsAddingPrompt] = useState(false);
   const [newPromptName, setNewPromptName] = useState('');
   const [newPromptContent, setNewPromptContent] = useState('');
@@ -34,10 +25,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
     const selectedPrompt = availablePrompts.find(p => p.id === selectedPromptId);
     if (selectedPrompt) {
       setSystemPrompt(selectedPrompt);
-    }
-    const newModel = availableModels.find(m => m.id === selectedModelId);
-    if (newModel) {
-      setSelectedModel(newModel);
     }
     setIsOpen(false);
   };
@@ -64,7 +51,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
           <div className="flex items-center justify-between mb-4">
             <Dialog.Title className="text-lg font-semibold">Settings</Dialog.Title>
             <Dialog.Close asChild>
@@ -74,7 +61,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
             </Dialog.Close>
           </div>
           
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div>
               <label htmlFor="apiKey" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 OpenAI API Key
@@ -90,30 +77,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 Your API key is stored locally and never sent to our servers.
               </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                GPT Model
-              </label>
-              <div className="space-y-2">
-                {availableModels.map((model) => (
-                  <div
-                    key={model.id}
-                    className={`p-3 rounded-md border cursor-pointer transition-colors ${
-                      selectedModelId === model.id
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
-                        : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
-                    }`}
-                    onClick={() => setSelectedModelId(model.id)}
-                  >
-                    <div className="font-medium mb-1">{model.name}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                      {model.description}
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
 
             <div>
