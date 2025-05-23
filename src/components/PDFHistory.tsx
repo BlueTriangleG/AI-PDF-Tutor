@@ -1,7 +1,7 @@
 import React from 'react';
 import { usePDF } from '../contexts/PDFContext';
 import { useChat } from '../contexts/ChatContext';
-import { Clock, File } from 'lucide-react';
+import { Clock, File, MessageSquare } from 'lucide-react';
 import { Card } from './ui/Card';
 import { processPDFFile } from '../utils/pdfUtils';
 
@@ -18,16 +18,29 @@ export const PDFHistory: React.FC = () => {
         return;
       }
 
-      // Fetch the PDF from the stored URL
-      const response = await fetch(doc.url);
-      const blob = await response.blob();
-      const file = new File([blob], doc.name, { type: 'application/pdf' });
+      // Create a new blob URL if the old one is invalid
+      let url = doc.url;
+      if (!url.startsWith('blob:')) {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to fetch document');
+        const blob = await response.blob();
+        url = URL.createObjectURL(blob);
+      }
+
+      const file = new File([await fetch(url).then(r => r.blob())], doc.name, { type: 'application/pdf' });
 
       // Process the PDF file
       const processedDocument = await processPDFFile(file);
       
+      // Update the document with the new URL and history data
+      const updatedDocument = {
+        ...processedDocument,
+        url,
+        lastViewed: new Date(),
+      };
+      
       // Set the document first to ensure proper initialization
-      setDocument(processedDocument);
+      setDocument(updatedDocument);
 
       // Restore the chat messages if they exist
       if (historyDoc.messages) {
@@ -36,6 +49,9 @@ export const PDFHistory: React.FC = () => {
           timestamp: new Date(msg.timestamp)
         }));
         setMessages(restoredMessages);
+      } else {
+        // Clear messages if no history exists
+        setMessages([]);
       }
 
       // Restore the current page if it exists
@@ -78,6 +94,12 @@ export const PDFHistory: React.FC = () => {
                   {doc.totalPages} pages • Last viewed{' '}
                   {new Date(doc.lastViewed).toLocaleDateString()}
                 </p>
+                {doc.messages && doc.messages.length > 0 && (
+                  <div className="flex items-center mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    <MessageSquare className="h-3 w-3 mr-1" />
+                    {doc.messages.length} message{doc.messages.length !== 1 ? 's' : ''}
+                  </div>
+                )}
               </div>
             </div>
           </Card>
