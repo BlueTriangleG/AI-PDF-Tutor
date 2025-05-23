@@ -37,7 +37,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
   const [selectedModel, setSelectedModel] = useState<GPTModel>(() => {
     const savedModel = localStorage.getItem('selected_model');
-    return savedModel ? JSON.parse(savedModel) : availableModels[2]; // Default to GPT-4
+    return savedModel ? JSON.parse(savedModel) : availableModels[0]; // Default to GPT-4 Turbo
   });
   const [availablePrompts, setAvailablePrompts] = useState<SystemPromptTemplate[]>(() => {
     const savedPrompts = localStorage.getItem('custom_prompts');

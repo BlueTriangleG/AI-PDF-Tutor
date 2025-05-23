@@ -52,35 +52,44 @@ export interface GPTModel {
 export const availableModels: GPTModel[] = [
   {
     id: 'gpt-4-0125-preview',
-    name: 'GPT-4 Turbo',
-    description: 'Latest GPT-4 model with improved instruction following, JSON mode, and more accurate responses',
+    name: 'GPT-4 Turbo Preview',
+    description: 'Most capable GPT-4 model, better at complex tasks, fresher knowledge',
     contextWindow: 128000,
     trainingCutoff: 'December 2023',
     inputPricing: '$0.01/1K tokens',
     outputPricing: '$0.03/1K tokens'
   },
   {
-    id: 'gpt-4-1106-preview',
-    name: 'GPT-4 Turbo (Legacy)',
-    description: 'Previous GPT-4 Turbo model with improved JSON mode and system prompts',
+    id: 'gpt-4-vision-preview',
+    name: 'GPT-4 Vision',
+    description: 'Same capabilities as GPT-4 Turbo with the ability to understand images',
     contextWindow: 128000,
-    trainingCutoff: 'April 2023',
+    trainingCutoff: 'December 2023',
     inputPricing: '$0.01/1K tokens',
     outputPricing: '$0.03/1K tokens'
   },
   {
-    id: 'gpt-4',
-    name: 'GPT-4',
-    description: 'More capable than GPT-3.5 in complex tasks, particularly in analysis and reasoning',
+    id: 'gpt-4-0613',
+    name: 'GPT-4 0613',
+    description: 'Stable GPT-4 release with broad capabilities',
     contextWindow: 8192,
     trainingCutoff: 'September 2021',
     inputPricing: '$0.03/1K tokens',
     outputPricing: '$0.06/1K tokens'
   },
   {
+    id: 'gpt-4-32k',
+    name: 'GPT-4 32k',
+    description: 'Same capabilities as GPT-4 with 4x longer context window',
+    contextWindow: 32768,
+    trainingCutoff: 'September 2021',
+    inputPricing: '$0.06/1K tokens',
+    outputPricing: '$0.12/1K tokens'
+  },
+  {
     id: 'gpt-3.5-turbo-0125',
     name: 'GPT-3.5 Turbo',
-    description: 'Latest GPT-3.5 model optimized for chat with improved accuracy',
+    description: 'Latest GPT-3.5 model with improved accuracy',
     contextWindow: 16385,
     trainingCutoff: 'September 2021',
     inputPricing: '$0.0005/1K tokens',
