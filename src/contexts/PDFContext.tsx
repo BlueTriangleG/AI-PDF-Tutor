@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { PDFDocument, PDFHistory } from '../types';
+import { saveDocument, getHistory } from '../utils/db';
 
 interface PDFContextType {
   document: PDFDocument | null;
@@ -19,8 +20,7 @@ export const PDFProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [currentPage, setCurrentPageState] = useState<number>(1);
   const [history, setHistory] = useState<PDFHistory[]>(() => {
-    const savedHistory = localStorage.getItem('pdf_history');
-    return savedHistory ? JSON.parse(savedHistory) : [];
+    return getHistory();
   });
 
   const setDocument = (doc: PDFDocument | null) => {
@@ -43,13 +43,12 @@ export const PDFProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         totalPages: document.totalPages,
         lastViewed: new Date(),
         messages: messages,
-        currentPage: currentPage
+        currentPage: currentPage,
+        url: document.url
       };
       
-      setHistory(prev => {
-        const filtered = prev.filter(item => item.id !== document.id);
-        return [historyEntry, ...filtered].slice(0, 10);
-      });
+      saveDocument(historyEntry);
+      setHistory(getHistory());
     }
   };
 
@@ -77,11 +76,6 @@ export const PDFProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       document.currentPage = currentPage;
     }
   }, [currentPage, document]);
-
-  // Save history to localStorage
-  useEffect(() => {
-    localStorage.setItem('pdf_history', JSON.stringify(history));
-  }, [history]);
 
   return (
     <PDFContext.Provider
