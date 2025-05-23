@@ -9,7 +9,7 @@ export const PDFHistory: React.FC = () => {
   const { history, setDocument, setCurrentPage } = usePDF();
   const { setMessages } = useChat();
 
-  const handleDocumentClick = async (doc: { id: string; name: string; url: string }) => {
+  const handleDocumentClick = async (doc: { id: string; name: string; url: string; messages?: any[] }) => {
     try {
       // Find the document in history
       const historyDoc = history.find(h => h.id === doc.id);
