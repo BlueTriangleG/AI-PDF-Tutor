@@ -52,16 +52,23 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!apiKey) return;
     try {
       const models = await fetchAvailableModels(apiKey);
-      setAvailableModels(models);
       
-      // If the currently selected model is not in the available models list,
-      // switch to gpt-3.5-turbo as a fallback
-      const modelExists = models.some((model) => model.id === selectedModel);
-      if (!modelExists) {
-        handleSetSelectedModel('gpt-3.5-turbo');
+      // Ensure models is an array before setting state
+      if (Array.isArray(models)) {
+        setAvailableModels(models);
+        
+        // Check if the currently selected model exists in the available models
+        const modelExists = models.some((model) => model.id === selectedModel);
+        if (!modelExists) {
+          handleSetSelectedModel('gpt-3.5-turbo');
+        }
+      } else {
+        console.error('Fetched models is not an array:', models);
+        setAvailableModels([]); // Reset to empty array if invalid data
       }
     } catch (error) {
       console.error('Failed to fetch models:', error);
+      setAvailableModels([]); // Reset to empty array on error
     }
   };
 
@@ -169,7 +176,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const testApiConnection = async (key: string, model: string) => {
     try {
-      if (!model || !availableModels.some(m => m.id === model)) {
+      if (!model || !Array.isArray(availableModels) || !availableModels.some(m => m.id === model)) {
         return false;
       }
       return await testConnection(key, model);
