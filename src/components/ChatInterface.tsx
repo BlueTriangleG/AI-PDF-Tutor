@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useChat } from '../contexts/ChatContext';
-import { Message as MessageType } from '../types';
+import { Message as MessageType, SystemPromptTemplate } from '../types';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { Card, CardHeader, CardBody, CardFooter } from './ui/Card';
-import { Send, Bot, User } from 'lucide-react';
+import { Send, Bot, User, Edit2, Check, X } from 'lucide-react';
 
 const DifficultyToggle: React.FC = () => {
   const { explanationLevel, setExplanationLevel } = useChat();
@@ -44,6 +44,82 @@ const DifficultyToggle: React.FC = () => {
           Detailed
         </button>
       </div>
+    </div>
+  );
+};
+
+const PromptSelector: React.FC = () => {
+  const { systemPrompt, setSystemPrompt, availablePrompts, addCustomPrompt } = useChat();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedPrompt, setEditedPrompt] = useState(systemPrompt.prompt);
+  const [selectedPromptId, setSelectedPromptId] = useState(systemPrompt.id);
+  
+  const handlePromptChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newPrompt = availablePrompts.find(p => p.id === e.target.value);
+    if (newPrompt) {
+      setSelectedPromptId(newPrompt.id);
+      setSystemPrompt(newPrompt);
+      setEditedPrompt(newPrompt.prompt);
+    }
+  };
+
+  const handleSavePrompt = () => {
+    const customPrompt: SystemPromptTemplate = {
+      id: `custom-${Date.now()}`,
+      name: 'Custom Tutor',
+      prompt: editedPrompt
+    };
+    addCustomPrompt(customPrompt);
+    setSystemPrompt(customPrompt);
+    setIsEditing(false);
+  };
+
+  return (
+    <div className="flex flex-col space-y-2 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+      <div className="flex items-center justify-between">
+        <select
+          value={selectedPromptId}
+          onChange={handlePromptChange}
+          className="text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md px-2 py-1"
+          disabled={isEditing}
+        >
+          {availablePrompts.map(prompt => (
+            <option key={prompt.id} value={prompt.id}>
+              {prompt.name}
+            </option>
+          ))}
+        </select>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsEditing(!isEditing)}
+          className="ml-2"
+        >
+          {isEditing ? <X className="h-4 w-4" /> : <Edit2 className="h-4 w-4" />}
+        </Button>
+      </div>
+      
+      {isEditing && (
+        <div className="space-y-2">
+          <textarea
+            value={editedPrompt}
+            onChange={(e) => setEditedPrompt(e.target.value)}
+            className="w-full h-24 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md p-2"
+            placeholder="Enter custom prompt..."
+          />
+          <div className="flex justify-end">
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleSavePrompt}
+              disabled={!editedPrompt.trim()}
+            >
+              <Check className="h-4 w-4 mr-1" />
+              Save Custom Prompt
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -108,9 +184,14 @@ export const ChatInterface: React.FC = () => {
   
   return (
     <Card className="h-full flex flex-col overflow-hidden">
-      <CardHeader className="flex-shrink-0 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
-        <h2 className="text-lg font-semibold">AI Tutor Chat</h2>
-        <DifficultyToggle />
+      <CardHeader className="flex-shrink-0 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex flex-col space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">AI Tutor Chat</h2>
+            <DifficultyToggle />
+          </div>
+          <PromptSelector />
+        </div>
       </CardHeader>
       
       <CardBody className="flex-1 min-h-0 overflow-y-auto p-4">
