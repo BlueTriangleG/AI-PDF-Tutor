@@ -39,30 +39,6 @@ export interface SystemPromptTemplate {
   prompt: string;
 }
 
-export interface GPTModel {
-  id: string;
-  name: string;
-  description: string;
-}
-
-export const availableModels: GPTModel[] = [
-  {
-    id: 'gpt-4-turbo-preview',
-    name: 'GPT-4 Turbo',
-    description: 'Most capable model, best for complex tasks and detailed analysis'
-  },
-  {
-    id: 'gpt-4',
-    name: 'GPT-4',
-    description: 'Highly capable model with strong reasoning abilities'
-  },
-  {
-    id: 'gpt-3.5-turbo',
-    name: 'GPT-3.5 Turbo',
-    description: 'Fast and cost-effective for most tasks'
-  }
-];
-
 export const defaultSystemPrompts: SystemPromptTemplate[] = [
   {
     id: 'default',
