@@ -50,7 +50,7 @@ const DifficultyToggle: React.FC = () => {
 };
 
 const TutorSelector: React.FC = () => {
-  const { systemPrompt, setSystemPrompt, availablePrompts, addCustomPrompt } = useChat();
+  const { systemPrompt, setSystemPrompt, availablePrompts, addCustomPrompt, updatePrompt } = useChat();
   const [isOpen, setIsOpen] = useState(false);
   const [editingPrompt, setEditingPrompt] = useState<SystemPromptTemplate | null>(null);
   const [newPromptName, setNewPromptName] = useState('');
@@ -67,18 +67,8 @@ const TutorSelector: React.FC = () => {
     };
 
     if (editingPrompt) {
-      // Update existing prompt
-      const updatedPrompts = availablePrompts.map(p => 
-        p.id === editingPrompt.id ? promptData : p
-      );
-      localStorage.setItem('custom_prompts', JSON.stringify(
-        updatedPrompts.filter(p => p.id.startsWith('custom-'))
-      ));
-      if (systemPrompt.id === editingPrompt.id) {
-        setSystemPrompt(promptData);
-      }
+      updatePrompt(promptData);
     } else {
-      // Add new prompt
       addCustomPrompt(promptData);
       setSystemPrompt(promptData);
     }

@@ -19,6 +19,7 @@ interface ChatContextType {
   setSystemPrompt: (prompt: SystemPromptTemplate) => void;
   setSelectedModel: (model: string) => void;
   addCustomPrompt: (prompt: SystemPromptTemplate) => void;
+  updatePrompt: (prompt: SystemPromptTemplate) => void;
   generatePageExplanation: (pageText: string, pageNumber: number) => void;
   setMessages: (messages: Message[]) => void;
   testApiConnection: (key: string, model: string) => Promise<boolean>;
@@ -45,7 +46,8 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [availableModels, setAvailableModels] = useState<OpenAI.Model[]>([]);
   const [availablePrompts, setAvailablePrompts] = useState<SystemPromptTemplate[]>(() => {
     const savedPrompts = localStorage.getItem('custom_prompts');
-    return savedPrompts ? [...defaultSystemPrompts, ...JSON.parse(savedPrompts)] : defaultSystemPrompts;
+    const customPrompts = savedPrompts ? JSON.parse(savedPrompts) : [];
+    return [...defaultSystemPrompts, ...customPrompts];
   });
 
   const refreshModels = async () => {
@@ -55,7 +57,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (response && Array.isArray(response.data)) {
         setAvailableModels(response.data);
         
-        // Check if the currently selected model exists in the available models
         const modelExists = response.data.some((model) => model.id === selectedModel);
         if (!modelExists) {
           handleSetSelectedModel('gpt-3.5-turbo');
@@ -163,13 +164,28 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addCustomPrompt = (prompt: SystemPromptTemplate) => {
     const newPrompt = {
       ...prompt,
-      id: Date.now().toString()
+      id: prompt.id || `custom-${Date.now()}`
     };
+    
     setAvailablePrompts(prev => {
       const updated = [...prev, newPrompt];
-      localStorage.setItem('custom_prompts', JSON.stringify(updated.filter(p => !defaultSystemPrompts.find(dp => dp.id === p.id))));
+      const customPrompts = updated.filter(p => p.id.startsWith('custom-'));
+      localStorage.setItem('custom_prompts', JSON.stringify(customPrompts));
       return updated;
     });
+  };
+
+  const updatePrompt = (updatedPrompt: SystemPromptTemplate) => {
+    setAvailablePrompts(prev => {
+      const updated = prev.map(p => p.id === updatedPrompt.id ? updatedPrompt : p);
+      const customPrompts = updated.filter(p => p.id.startsWith('custom-'));
+      localStorage.setItem('custom_prompts', JSON.stringify(customPrompts));
+      return updated;
+    });
+
+    if (systemPrompt.id === updatedPrompt.id) {
+      handleSetSystemPrompt(updatedPrompt);
+    }
   };
 
   const testApiConnection = async (key: string, model: string) => {
@@ -201,6 +217,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSystemPrompt: handleSetSystemPrompt,
         setSelectedModel: handleSetSelectedModel,
         addCustomPrompt,
+        updatePrompt,
         generatePageExplanation,
         setMessages,
         testApiConnection,
