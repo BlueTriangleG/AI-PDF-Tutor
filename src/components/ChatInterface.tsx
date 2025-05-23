@@ -4,7 +4,7 @@ import { Message as MessageType, SystemPromptTemplate } from '../types';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { Card, CardHeader, CardBody, CardFooter } from './ui/Card';
-import { Send, Bot, User, Edit2, Plus, X } from 'lucide-react';
+import { Send, Bot, User, Edit2, Plus, X, Pencil } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 
 const DifficultyToggle: React.FC = () => {
@@ -52,6 +52,7 @@ const DifficultyToggle: React.FC = () => {
 const TutorSelector: React.FC = () => {
   const { systemPrompt, setSystemPrompt, availablePrompts, addCustomPrompt } = useChat();
   const [isOpen, setIsOpen] = useState(false);
+  const [editingPrompt, setEditingPrompt] = useState<SystemPromptTemplate | null>(null);
   const [newPromptName, setNewPromptName] = useState('');
   const [newPromptContent, setNewPromptContent] = useState('');
   const [selectedPromptId, setSelectedPromptId] = useState(systemPrompt.id);
@@ -59,16 +60,39 @@ const TutorSelector: React.FC = () => {
   const handleSavePrompt = () => {
     if (!newPromptName.trim() || !newPromptContent.trim()) return;
     
-    const customPrompt: SystemPromptTemplate = {
-      id: `custom-${Date.now()}`,
+    const promptData: SystemPromptTemplate = {
+      id: editingPrompt ? editingPrompt.id : `custom-${Date.now()}`,
       name: newPromptName,
       prompt: newPromptContent
     };
-    addCustomPrompt(customPrompt);
-    setSystemPrompt(customPrompt);
+
+    if (editingPrompt) {
+      // Update existing prompt
+      const updatedPrompts = availablePrompts.map(p => 
+        p.id === editingPrompt.id ? promptData : p
+      );
+      localStorage.setItem('custom_prompts', JSON.stringify(
+        updatedPrompts.filter(p => p.id.startsWith('custom-'))
+      ));
+      if (systemPrompt.id === editingPrompt.id) {
+        setSystemPrompt(promptData);
+      }
+    } else {
+      // Add new prompt
+      addCustomPrompt(promptData);
+      setSystemPrompt(promptData);
+    }
+
     setNewPromptName('');
     setNewPromptContent('');
+    setEditingPrompt(null);
     setIsOpen(false);
+  };
+
+  const handleEditPrompt = (prompt: SystemPromptTemplate) => {
+    setEditingPrompt(prompt);
+    setNewPromptName(prompt.name);
+    setNewPromptContent(prompt.prompt);
   };
 
   const handlePromptSelect = (promptId: string) => {
@@ -77,6 +101,12 @@ const TutorSelector: React.FC = () => {
       setSystemPrompt(prompt);
       setSelectedPromptId(promptId);
     }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingPrompt(null);
+    setNewPromptName('');
+    setNewPromptContent('');
   };
 
   return (
@@ -95,7 +125,7 @@ const TutorSelector: React.FC = () => {
           <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-4">
               <Dialog.Title className="text-lg font-semibold">
-                Select AI Tutor
+                {editingPrompt ? 'Edit Tutor' : 'Select AI Tutor'}
               </Dialog.Title>
               <Dialog.Close asChild>
                 <button className="text-gray-400 hover:text-gray-500">
@@ -105,27 +135,43 @@ const TutorSelector: React.FC = () => {
             </div>
             
             <div className="space-y-4">
-              <div className="space-y-2">
-                {availablePrompts.map((prompt) => (
-                  <div
-                    key={prompt.id}
-                    className={`p-3 rounded-md border cursor-pointer transition-colors ${
-                      selectedPromptId === prompt.id
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
-                        : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
-                    }`}
-                    onClick={() => handlePromptSelect(prompt.id)}
-                  >
-                    <div className="font-medium mb-1">{prompt.name}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                      {prompt.prompt}
+              {!editingPrompt && (
+                <div className="space-y-2">
+                  {availablePrompts.map((prompt) => (
+                    <div
+                      key={prompt.id}
+                      className={`p-3 rounded-md border relative ${
+                        selectedPromptId === prompt.id
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
+                          : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      <div 
+                        className="cursor-pointer"
+                        onClick={() => handlePromptSelect(prompt.id)}
+                      >
+                        <div className="font-medium mb-1">{prompt.name}</div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                          {prompt.prompt}
+                        </div>
+                      </div>
+                      {prompt.id.startsWith('custom-') && (
+                        <button
+                          className="absolute top-2 right-2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                          onClick={() => handleEditPrompt(prompt)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                      )}
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
               
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                <h3 className="text-sm font-medium mb-2">Create Custom Tutor</h3>
+              <div className={editingPrompt ? '' : 'border-t border-gray-200 dark:border-gray-700 pt-4'}>
+                <h3 className="text-sm font-medium mb-2">
+                  {editingPrompt ? 'Edit Tutor' : 'Create Custom Tutor'}
+                </h3>
                 <div className="space-y-3">
                   <Input
                     placeholder="Tutor Name"
@@ -139,15 +185,30 @@ const TutorSelector: React.FC = () => {
                     value={newPromptContent}
                     onChange={(e) => setNewPromptContent(e.target.value)}
                   />
-                  <Button
-                    variant="primary"
-                    fullWidth
-                    onClick={handleSavePrompt}
-                    disabled={!newPromptName.trim() || !newPromptContent.trim()}
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add Custom Tutor
-                  </Button>
+                  <div className="flex space-x-2">
+                    {editingPrompt && (
+                      <Button
+                        variant="outline"
+                        fullWidth
+                        onClick={handleCancelEdit}
+                      >
+                        Cancel
+                      </Button>
+                    )}
+                    <Button
+                      variant="primary"
+                      fullWidth
+                      onClick={handleSavePrompt}
+                      disabled={!newPromptName.trim() || !newPromptContent.trim()}
+                    >
+                      {editingPrompt ? 'Save Changes' : (
+                        <>
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add Custom Tutor
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
