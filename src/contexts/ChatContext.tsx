@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Message, ExplanationLevel, SystemPromptTemplate, defaultSystemPrompts } from '../types';
+import { Message, ExplanationLevel, SystemPromptTemplate, ChatSession, defaultSystemPrompts } from '../types';
 import { generateAIResponse, testConnection, fetchAvailableModels } from '../utils/pdfUtils';
 import OpenAI from 'openai';
 
 interface ChatContextType {
-  messages: Message[];
+  currentSession: ChatSession | null;
+  sessions: ChatSession[];
   isLoading: boolean;
   explanationLevel: ExplanationLevel;
   apiKey: string;
@@ -13,7 +14,7 @@ interface ChatContextType {
   availableModels: OpenAI.Model[];
   availablePrompts: SystemPromptTemplate[];
   addMessage: (content: string, role: 'user' | 'assistant') => Promise<void>;
-  clearMessages: () => void;
+  clearCurrentSession: () => void;
   setExplanationLevel: (level: ExplanationLevel) => void;
   setApiKey: (key: string) => void;
   setSystemPrompt: (prompt: SystemPromptTemplate) => void;
@@ -21,7 +22,8 @@ interface ChatContextType {
   addCustomPrompt: (prompt: SystemPromptTemplate) => void;
   updatePrompt: (prompt: SystemPromptTemplate) => void;
   generatePageExplanation: (pageText: string, pageNumber: number) => void;
-  setMessages: (messages: Message[]) => void;
+  createNewSession: (documentId: string, documentName: string) => void;
+  switchSession: (sessionId: string) => void;
   testApiConnection: (key: string, model: string) => Promise<boolean>;
   refreshModels: () => Promise<void>;
 }
@@ -29,7 +31,11 @@ interface ChatContextType {
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
+  const [sessions, setSessions] = useState<ChatSession[]>(() => {
+    const savedSessions = localStorage.getItem('chat_sessions');
+    return savedSessions ? JSON.parse(savedSessions) : [];
+  });
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [explanationLevel, setExplanationLevel] = useState<ExplanationLevel>('highlevel');
   const [apiKey, setApiKey] = useState<string>(() => {
@@ -40,8 +46,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return savedPrompt ? JSON.parse(savedPrompt) : defaultSystemPrompts[0];
   });
   const [selectedModel, setSelectedModel] = useState<string>(() => {
-    const savedModel = localStorage.getItem('selected_model');
-    return savedModel || 'gpt-3.5-turbo';
+    return localStorage.getItem('selected_model') || 'gpt-3.5-turbo';
   });
   const [availableModels, setAvailableModels] = useState<OpenAI.Model[]>([]);
   const [availablePrompts, setAvailablePrompts] = useState<SystemPromptTemplate[]>(() => {
@@ -49,6 +54,166 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const customPrompts = savedPrompts ? JSON.parse(savedPrompts) : [];
     return [...defaultSystemPrompts, ...customPrompts];
   });
+
+  useEffect(() => {
+    localStorage.setItem('chat_sessions', JSON.stringify(sessions));
+  }, [sessions]);
+
+  const createNewSession = (documentId: string, documentName: string) => {
+    const newSession: ChatSession = {
+      id: `session-${Date.now()}`,
+      documentId,
+      documentName,
+      messages: [],
+      lastUpdated: new Date()
+    };
+    setSessions(prev => [newSession, ...prev]);
+    setCurrentSession(newSession);
+  };
+
+  const switchSession = (sessionId: string) => {
+    const session = sessions.find(s => s.id === sessionId);
+    if (session) {
+      setCurrentSession(session);
+    }
+  };
+
+  const addMessage = async (content: string, role: 'user' | 'assistant') => {
+    if (!currentSession) return;
+
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      role,
+      content,
+      timestamp: new Date(),
+    };
+
+    const updatedSession = {
+      ...currentSession,
+      messages: [...currentSession.messages, newMessage],
+      lastUpdated: new Date()
+    };
+
+    setCurrentSession(updatedSession);
+    setSessions(prev => prev.map(s => 
+      s.id === currentSession.id ? updatedSession : s
+    ));
+
+    if (role === 'user') {
+      setIsLoading(true);
+      try {
+        const response = await generateAIResponse(content, explanationLevel, apiKey, systemPrompt.prompt, selectedModel);
+        const aiMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: response,
+          timestamp: new Date(),
+        };
+        
+        const sessionWithAIResponse = {
+          ...updatedSession,
+          messages: [...updatedSession.messages, aiMessage],
+          lastUpdated: new Date()
+        };
+
+        setCurrentSession(sessionWithAIResponse);
+        setSessions(prev => prev.map(s => 
+          s.id === currentSession.id ? sessionWithAIResponse : s
+        ));
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+        const errorResponse: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: `Error: ${errorMessage}`,
+          timestamp: new Date(),
+        };
+
+        const sessionWithError = {
+          ...updatedSession,
+          messages: [...updatedSession.messages, errorResponse],
+          lastUpdated: new Date()
+        };
+
+        setCurrentSession(sessionWithError);
+        setSessions(prev => prev.map(s => 
+          s.id === currentSession.id ? sessionWithError : s
+        ));
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const clearCurrentSession = () => {
+    setCurrentSession(null);
+  };
+
+  const generatePageExplanation = async (pageText: string, pageNumber: number) => {
+    if (!currentSession) return;
+    
+    setIsLoading(true);
+    
+    const initialMessage: Message = {
+      id: Date.now().toString(),
+      role: 'assistant',
+      content: `I'm now looking at page ${pageNumber}. Let me explain it for you.`,
+      timestamp: new Date(),
+    };
+    
+    const updatedSession = {
+      ...currentSession,
+      messages: [...currentSession.messages, initialMessage],
+      lastUpdated: new Date()
+    };
+
+    setCurrentSession(updatedSession);
+    setSessions(prev => prev.map(s => 
+      s.id === currentSession.id ? updatedSession : s
+    ));
+    
+    try {
+      const response = await generateAIResponse(pageText, explanationLevel, apiKey, systemPrompt.prompt, selectedModel);
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: response,
+        timestamp: new Date(),
+      };
+
+      const sessionWithResponse = {
+        ...updatedSession,
+        messages: [...updatedSession.messages, aiMessage],
+        lastUpdated: new Date()
+      };
+
+      setCurrentSession(sessionWithResponse);
+      setSessions(prev => prev.map(s => 
+        s.id === currentSession.id ? sessionWithResponse : s
+      ));
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+      const errorResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: `Error explaining page: ${errorMessage}`,
+        timestamp: new Date(),
+      };
+
+      const sessionWithError = {
+        ...updatedSession,
+        messages: [...updatedSession.messages, errorResponse],
+        lastUpdated: new Date()
+      };
+
+      setCurrentSession(sessionWithError);
+      setSessions(prev => prev.map(s => 
+        s.id === currentSession.id ? sessionWithError : s
+      ));
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const refreshModels = async () => {
     if (!apiKey) return;
@@ -59,7 +224,8 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         const modelExists = response.data.some((model) => model.id === selectedModel);
         if (!modelExists) {
-          handleSetSelectedModel('gpt-3.5-turbo');
+          setSelectedModel('gpt-3.5-turbo');
+          localStorage.setItem('selected_model', 'gpt-3.5-turbo');
         }
       } else {
         console.error('Invalid models response structure:', response);
@@ -76,75 +242,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       refreshModels();
     }
   }, [apiKey]);
-
-  const addMessage = async (content: string, role: 'user' | 'assistant') => {
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      role,
-      content,
-      timestamp: new Date(),
-    };
-
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
-
-    if (role === 'user') {
-      setIsLoading(true);
-      try {
-        const response = await generateAIResponse(content, explanationLevel, apiKey, systemPrompt.prompt, selectedModel);
-        const aiMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: response,
-          timestamp: new Date(),
-        };
-        setMessages((prevMessages) => [...prevMessages, aiMessage]);
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'An error occurred';
-        const errorResponse: Message = {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: `Error: ${errorMessage}`,
-          timestamp: new Date(),
-        };
-        setMessages((prevMessages) => [...prevMessages, errorResponse]);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  };
-
-  const clearMessages = () => {
-    setMessages([]);
-  };
-
-  const generatePageExplanation = async (pageText: string, pageNumber: number) => {
-    setIsLoading(true);
-    
-    const initialMessage: Message = {
-      id: Date.now().toString(),
-      role: 'assistant',
-      content: `I'm now looking at page ${pageNumber}. Let me explain it for you.`,
-      timestamp: new Date(),
-    };
-    
-    setMessages((prevMessages) => [...prevMessages, initialMessage]);
-    
-    try {
-      const response = await generateAIResponse(pageText, explanationLevel, apiKey, systemPrompt.prompt, selectedModel);
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: response,
-        timestamp: new Date(),
-      };
-      setMessages((prevMessages) => [...prevMessages, aiMessage]);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
-      addMessage(`Error explaining page: ${errorMessage}`, 'assistant');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleSetApiKey = (key: string) => {
     setApiKey(key);
@@ -202,7 +299,8 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <ChatContext.Provider
       value={{
-        messages,
+        currentSession,
+        sessions,
         isLoading,
         explanationLevel,
         apiKey,
@@ -211,7 +309,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         availableModels,
         availablePrompts,
         addMessage,
-        clearMessages,
+        clearCurrentSession,
         setExplanationLevel,
         setApiKey: handleSetApiKey,
         setSystemPrompt: handleSetSystemPrompt,
@@ -219,7 +317,8 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         addCustomPrompt,
         updatePrompt,
         generatePageExplanation,
-        setMessages,
+        createNewSession,
+        switchSession,
         testApiConnection,
         refreshModels,
       }}
