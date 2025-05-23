@@ -27,7 +27,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
   const [isOpen, setIsOpen] = useState(false);
   const [tempApiKey, setTempApiKey] = useState(apiKey);
   const [selectedPromptId, setSelectedPromptId] = useState(systemPrompt.id);
-  const [selectedModelId, setSelectedModelId] = useState(selectedModel);
+  const [selectedModelId, setSelectedModelId] = useState(selectedModel || 'gpt-3.5-turbo');
   const [isAddingPrompt, setIsAddingPrompt] = useState(false);
   const [newPromptName, setNewPromptName] = useState('');
   const [newPromptContent, setNewPromptContent] = useState('');
@@ -66,6 +66,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
   };
 
   const handleTestConnection = async () => {
+    if (!selectedModelId) {
+      setConnectionStatus('error');
+      return;
+    }
+    
     setIsTestingConnection(true);
     setConnectionStatus('untested');
     const success = await testApiConnection(tempApiKey, selectedModelId);
@@ -80,7 +85,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
   };
 
   const filteredModels = Array.isArray(availableModels) 
-    ? availableModels.filter(model => model.id.startsWith('gpt-') && !model.id.includes('instruct'))
+    ? availableModels
+        .filter(model => model.id.startsWith('gpt-') && !model.id.includes('instruct'))
+        .sort((a, b) => a.id.localeCompare(b.id))
     : [];
 
   return (
@@ -121,6 +128,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
                   size="sm"
                   onClick={handleTestConnection}
                   isLoading={isTestingConnection}
+                  disabled={!selectedModelId || !tempApiKey}
                 >
                   Test
                 </Button>
@@ -131,7 +139,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
                 }`}>
                   {connectionStatus === 'success' 
                     ? 'Connection successful!' 
-                    : 'Connection failed. Please check your API key and try again.'}
+                    : 'Connection failed. Please check your API key and selected model.'}
                 </p>
               )}
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
@@ -154,6 +162,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
                   <RefreshCw className="h-4 w-4" />
                 </Button>
               </div>
+              {filteredModels.length === 0 && (
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                  No models available. Please check your API key and refresh the list.
+                </p>
+              )}
               <div className="space-y-2">
                 {filteredModels.map((model) => (
                   <div

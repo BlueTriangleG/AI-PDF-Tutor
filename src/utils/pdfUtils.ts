@@ -102,6 +102,11 @@ export const fetchAvailableModels = async (apiKey: string): Promise<OpenAI.Model
 };
 
 export const testConnection = async (apiKey: string, model: string): Promise<boolean> => {
+  if (!model || !model.startsWith('gpt-')) {
+    console.error('Invalid model ID:', model);
+    return false;
+  }
+
   try {
     const client = new OpenAI({ apiKey, dangerouslyAllowBrowser: true });
     const response = await client.chat.completions.create({
