@@ -10,6 +10,11 @@
   color-scheme: dark;
 }
 
+/* Icon colors */
+.lucide {
+  @apply text-gray-800 dark:text-gray-200;
+}
+
 /* Add styles for markdown content */
 .prose {
   max-width: none !important;
@@ -45,4 +50,46 @@
 .prose table {
   width: 100%;
   border-collapse: collapse;
+}
+
+/* Dark mode improvements */
+.dark {
+  @apply bg-gray-900 text-gray-100;
+}
+
+.dark .bg-white {
+  @apply bg-gray-800;
+}
+
+.dark .border-gray-200 {
+  @apply border-gray-700;
+}
+
+.dark .text-gray-800 {
+  @apply text-gray-200;
+}
+
+.dark .text-gray-600 {
+  @apply text-gray-400;
+}
+
+/* Button hover states in dark mode */
+.dark .hover\:bg-gray-100:hover {
+  @apply hover:bg-gray-700;
+}
+
+/* Input styles in dark mode */
+.dark input,
+.dark textarea {
+  @apply bg-gray-800 border-gray-700 text-gray-200;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  @apply text-gray-500;
+}
+
+/* Card styles in dark mode */
+.dark .card {
+  @apply bg-gray-800 border-gray-700;
 }
