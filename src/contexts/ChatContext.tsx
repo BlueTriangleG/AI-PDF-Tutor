@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState } from 'react';
-import { Message, ExplanationLevel, SystemPromptTemplate, defaultSystemPrompts, GPTModel, availableModels } from '../types';
-import { generateAIResponse, testConnection } from '../utils/pdfUtils';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Message, ExplanationLevel, SystemPromptTemplate, defaultSystemPrompts, GPTModel } from '../types';
+import { generateAIResponse, testConnection, fetchAvailableModels } from '../utils/pdfUtils';
+import OpenAI from 'openai';
 
 interface ChatContextType {
   messages: Message[];
@@ -9,17 +10,19 @@ interface ChatContextType {
   apiKey: string;
   systemPrompt: SystemPromptTemplate;
   selectedModel: GPTModel;
+  availableModels: OpenAI.ModelsPage;
   availablePrompts: SystemPromptTemplate[];
   addMessage: (content: string, role: 'user' | 'assistant') => Promise<void>;
   clearMessages: () => void;
   setExplanationLevel: (level: ExplanationLevel) => void;
   setApiKey: (key: string) => void;
   setSystemPrompt: (prompt: SystemPromptTemplate) => void;
-  setSelectedModel: (model: GPTModel) => void;
+  setSelectedModel: (model: string) => void;
   addCustomPrompt: (prompt: SystemPromptTemplate) => void;
   generatePageExplanation: (pageText: string, pageNumber: number) => void;
   setMessages: (messages: Message[]) => void;
   testApiConnection: (key: string, model: string) => Promise<boolean>;
+  refreshModels: () => Promise<void>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -35,14 +38,30 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const savedPrompt = localStorage.getItem('system_prompt');
     return savedPrompt ? JSON.parse(savedPrompt) : defaultSystemPrompts[0];
   });
-  const [selectedModel, setSelectedModel] = useState<GPTModel>(() => {
-    const savedModel = localStorage.getItem('selected_model');
-    return savedModel ? JSON.parse(savedModel) : availableModels[2]; // Default to GPT-4
+  const [selectedModel, setSelectedModel] = useState<string>(() => {
+    return localStorage.getItem('selected_model') || 'gpt-4';
   });
+  const [availableModels, setAvailableModels] = useState<OpenAI.ModelsPage>([]);
   const [availablePrompts, setAvailablePrompts] = useState<SystemPromptTemplate[]>(() => {
     const savedPrompts = localStorage.getItem('custom_prompts');
     return savedPrompts ? [...defaultSystemPrompts, ...JSON.parse(savedPrompts)] : defaultSystemPrompts;
   });
+
+  const refreshModels = async () => {
+    if (!apiKey) return;
+    try {
+      const models = await fetchAvailableModels(apiKey);
+      setAvailableModels(models);
+    } catch (error) {
+      console.error('Failed to fetch models:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (apiKey) {
+      refreshModels();
+    }
+  }, [apiKey]);
 
   const addMessage = async (content: string, role: 'user' | 'assistant') => {
     const newMessage: Message = {
@@ -57,7 +76,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (role === 'user') {
       setIsLoading(true);
       try {
-        const response = await generateAIResponse(content, explanationLevel, apiKey, systemPrompt.prompt, selectedModel.id);
+        const response = await generateAIResponse(content, explanationLevel, apiKey, systemPrompt.prompt, selectedModel);
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
@@ -97,7 +116,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setMessages((prevMessages) => [...prevMessages, initialMessage]);
     
     try {
-      const response = await generateAIResponse(pageText, explanationLevel, apiKey, systemPrompt.prompt, selectedModel.id);
+      const response = await generateAIResponse(pageText, explanationLevel, apiKey, systemPrompt.prompt, selectedModel);
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
@@ -123,9 +142,9 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('system_prompt', JSON.stringify(prompt));
   };
 
-  const handleSetSelectedModel = (model: GPTModel) => {
+  const handleSetSelectedModel = (model: string) => {
     setSelectedModel(model);
-    localStorage.setItem('selected_model', JSON.stringify(model));
+    localStorage.setItem('selected_model', model);
   };
 
   const addCustomPrompt = (prompt: SystemPromptTemplate) => {
@@ -157,6 +176,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         apiKey,
         systemPrompt,
         selectedModel,
+        availableModels,
         availablePrompts,
         addMessage,
         clearMessages,
@@ -168,6 +188,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         generatePageExplanation,
         setMessages,
         testApiConnection,
+        refreshModels,
       }}
     >
       {children}

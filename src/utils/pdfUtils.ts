@@ -1,6 +1,7 @@
 import { PDFDocument, PDFPage } from '../types';
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
+import OpenAI from 'openai';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
@@ -12,7 +13,6 @@ export const processPDFFile = async (file: File): Promise<PDFDocument> => {
     const pages: PDFPage[] = [];
     const totalPages = pdf.numPages;
     
-    // Process each page
     for (let i = 1; i <= totalPages; i++) {
       const page = await pdf.getPage(i);
       const textContent = await page.getTextContent();
@@ -27,7 +27,6 @@ export const processPDFFile = async (file: File): Promise<PDFDocument> => {
       });
     }
     
-    // Create a unique ID for the document
     const docId = Date.now().toString();
     
     return {
@@ -92,28 +91,27 @@ export const generateAIResponse = async (
   }
 };
 
+export const fetchAvailableModels = async (apiKey: string): Promise<OpenAI.ModelsPage> => {
+  const client = new OpenAI({ apiKey });
+  try {
+    return await client.models.list();
+  } catch (error) {
+    console.error('Error fetching models:', error);
+    throw error;
+  }
+};
+
 export const testConnection = async (apiKey: string, model: string): Promise<boolean> => {
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: model,
-        messages: [
-          {
-            role: 'user',
-            content: 'Test connection',
-          },
-        ],
-        max_tokens: 1,
-      }),
+    const client = new OpenAI({ apiKey });
+    const response = await client.chat.completions.create({
+      model,
+      messages: [{ role: 'user', content: 'Test connection' }],
+      max_tokens: 1,
     });
-
-    return response.ok;
+    return !!response.choices.length;
   } catch (error) {
+    console.error('Connection test failed:', error);
     return false;
   }
 };

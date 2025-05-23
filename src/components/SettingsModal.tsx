@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { Settings, X, Plus, Info } from 'lucide-react';
+import { Settings, X, Plus, Info, RefreshCw } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
-import { SystemPromptTemplate, availableModels } from '../types';
+import { SystemPromptTemplate } from '../types';
 import { useChat } from '../contexts/ChatContext';
 
 interface SettingsModalProps {
@@ -19,19 +19,28 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
     addCustomPrompt,
     selectedModel,
     setSelectedModel,
-    testApiConnection
+    testApiConnection,
+    availableModels,
+    refreshModels
   } = useChat();
   
   const [isOpen, setIsOpen] = useState(false);
   const [tempApiKey, setTempApiKey] = useState(apiKey);
   const [selectedPromptId, setSelectedPromptId] = useState(systemPrompt.id);
-  const [selectedModelId, setSelectedModelId] = useState(selectedModel.id);
+  const [selectedModelId, setSelectedModelId] = useState(selectedModel);
   const [isAddingPrompt, setIsAddingPrompt] = useState(false);
   const [newPromptName, setNewPromptName] = useState('');
   const [newPromptContent, setNewPromptContent] = useState('');
   const [showModelInfo, setShowModelInfo] = useState<string | null>(null);
   const [isTestingConnection, setIsTestingConnection] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'untested' | 'success' | 'error'>('untested');
+  const [isRefreshingModels, setIsRefreshingModels] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && tempApiKey) {
+      refreshModels();
+    }
+  }, [isOpen, tempApiKey]);
 
   const handleSave = () => {
     onSaveApiKey(tempApiKey);
@@ -39,10 +48,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
     if (selectedPrompt) {
       setSystemPrompt(selectedPrompt);
     }
-    const newModel = availableModels.find(m => m.id === selectedModelId);
-    if (newModel) {
-      setSelectedModel(newModel);
-    }
+    setSelectedModel(selectedModelId);
     setIsOpen(false);
   };
 
@@ -66,6 +72,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
     setConnectionStatus(success ? 'success' : 'error');
     setIsTestingConnection(false);
   };
+
+  const handleRefreshModels = async () => {
+    setIsRefreshingModels(true);
+    await refreshModels();
+    setIsRefreshingModels(false);
+  };
+
+  const filteredModels = availableModels.filter(model => 
+    model.id.startsWith('gpt-') && !model.id.includes('instruct')
+  );
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
@@ -124,11 +140,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                GPT Model
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  GPT Model
+                </label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRefreshModels}
+                  isLoading={isRefreshingModels}
+                  className="h-8 w-8 p-0"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+              </div>
               <div className="space-y-2">
-                {availableModels.map((model) => (
+                {filteredModels.map((model) => (
                   <div
                     key={model.id}
                     className={`p-3 rounded-md border cursor-pointer transition-colors relative ${
@@ -137,35 +164,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
                         : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
                     }`}
                     onClick={() => setSelectedModelId(model.id)}
-                    onMouseEnter={() => setShowModelInfo(model.id)}
-                    onMouseLeave={() => setShowModelInfo(null)}
                   >
-                    <div className="font-medium mb-1">{model.name}</div>
+                    <div className="font-medium mb-1">{model.id}</div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
-                      {model.description}
+                      {model.owned_by}
                     </div>
-                    {showModelInfo === model.id && (
-                      <div className="absolute left-full ml-2 w-64 p-3 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50">
-                        <div className="text-sm space-y-2">
-                          <p><strong>Context Window:</strong> {model.contextWindow?.toLocaleString()} tokens</p>
-                          <p><strong>Training Cutoff:</strong> {model.trainingCutoff}</p>
-                          <p><strong>Pricing:</strong></p>
-                          <ul className="list-disc pl-4">
-                            <li>Input: {model.inputPricing}</li>
-                            <li>Output: {model.outputPricing}</li>
-                          </ul>
-                        </div>
-                      </div>
-                    )}
-                    <button 
-                      className="absolute top-2 right-2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowModelInfo(showModelInfo === model.id ? null : model.id);
-                      }}
-                    >
-                      <Info className="h-4 w-4" />
-                    </button>
                   </div>
                 ))}
               </div>
