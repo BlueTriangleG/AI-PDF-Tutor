@@ -39,6 +39,55 @@ export interface SystemPromptTemplate {
   prompt: string;
 }
 
+export interface GPTModel {
+  id: string;
+  name: string;
+  description: string;
+  contextWindow?: number;
+  trainingCutoff?: string;
+  inputPricing?: string;
+  outputPricing?: string;
+}
+
+export const availableModels: GPTModel[] = [
+  {
+    id: 'gpt-4-0125-preview',
+    name: 'GPT-4 Turbo',
+    description: 'Latest GPT-4 model with improved instruction following, JSON mode, and more accurate responses',
+    contextWindow: 128000,
+    trainingCutoff: 'December 2023',
+    inputPricing: '$0.01/1K tokens',
+    outputPricing: '$0.03/1K tokens'
+  },
+  {
+    id: 'gpt-4-1106-preview',
+    name: 'GPT-4 Turbo (Legacy)',
+    description: 'Previous GPT-4 Turbo model with improved JSON mode and system prompts',
+    contextWindow: 128000,
+    trainingCutoff: 'April 2023',
+    inputPricing: '$0.01/1K tokens',
+    outputPricing: '$0.03/1K tokens'
+  },
+  {
+    id: 'gpt-4',
+    name: 'GPT-4',
+    description: 'More capable than GPT-3.5 in complex tasks, particularly in analysis and reasoning',
+    contextWindow: 8192,
+    trainingCutoff: 'September 2021',
+    inputPricing: '$0.03/1K tokens',
+    outputPricing: '$0.06/1K tokens'
+  },
+  {
+    id: 'gpt-3.5-turbo-0125',
+    name: 'GPT-3.5 Turbo',
+    description: 'Latest GPT-3.5 model optimized for chat with improved accuracy',
+    contextWindow: 16385,
+    trainingCutoff: 'September 2021',
+    inputPricing: '$0.0005/1K tokens',
+    outputPricing: '$0.0015/1K tokens'
+  }
+];
+
 export const defaultSystemPrompts: SystemPromptTemplate[] = [
   {
     id: 'default',

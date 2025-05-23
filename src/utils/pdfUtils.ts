@@ -48,7 +48,8 @@ export const generateAIResponse = async (
   text: string,
   level: 'eli5' | 'highlevel' | 'detailed',
   apiKey: string,
-  systemPrompt: string
+  systemPrompt: string,
+  model: string
 ): Promise<string> => {
   if (!apiKey) {
     throw new Error('OpenAI API key is required. Please add it in Settings.');
@@ -64,7 +65,7 @@ export const generateAIResponse = async (
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: model,
         messages: [
           {
             role: 'system',
@@ -88,6 +89,32 @@ export const generateAIResponse = async (
   } catch (error) {
     console.error('Error generating AI response:', error);
     throw error;
+  }
+};
+
+export const testConnection = async (apiKey: string, model: string): Promise<boolean> => {
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: model,
+        messages: [
+          {
+            role: 'user',
+            content: 'Test connection',
+          },
+        ],
+        max_tokens: 1,
+      }),
+    });
+
+    return response.ok;
+  } catch (error) {
+    return false;
   }
 };
 

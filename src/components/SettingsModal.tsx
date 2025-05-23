@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { Settings, X, Plus, Trash2 } from 'lucide-react';
+import { Settings, X, Plus, Info } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
-import { SystemPromptTemplate } from '../types';
+import { SystemPromptTemplate, availableModels } from '../types';
 import { useChat } from '../contexts/ChatContext';
 
 interface SettingsModalProps {
@@ -12,19 +12,36 @@ interface SettingsModalProps {
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiKey }) => {
-  const { systemPrompt, setSystemPrompt, availablePrompts, addCustomPrompt } = useChat();
+  const { 
+    systemPrompt, 
+    setSystemPrompt, 
+    availablePrompts, 
+    addCustomPrompt,
+    selectedModel,
+    setSelectedModel,
+    testApiConnection
+  } = useChat();
+  
   const [isOpen, setIsOpen] = useState(false);
   const [tempApiKey, setTempApiKey] = useState(apiKey);
   const [selectedPromptId, setSelectedPromptId] = useState(systemPrompt.id);
+  const [selectedModelId, setSelectedModelId] = useState(selectedModel.id);
   const [isAddingPrompt, setIsAddingPrompt] = useState(false);
   const [newPromptName, setNewPromptName] = useState('');
   const [newPromptContent, setNewPromptContent] = useState('');
+  const [showModelInfo, setShowModelInfo] = useState<string | null>(null);
+  const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'untested' | 'success' | 'error'>('untested');
 
   const handleSave = () => {
     onSaveApiKey(tempApiKey);
     const selectedPrompt = availablePrompts.find(p => p.id === selectedPromptId);
     if (selectedPrompt) {
       setSystemPrompt(selectedPrompt);
+    }
+    const newModel = availableModels.find(m => m.id === selectedModelId);
+    if (newModel) {
+      setSelectedModel(newModel);
     }
     setIsOpen(false);
   };
@@ -42,6 +59,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
     }
   };
 
+  const handleTestConnection = async () => {
+    setIsTestingConnection(true);
+    setConnectionStatus('untested');
+    const success = await testApiConnection(tempApiKey, selectedModelId);
+    setConnectionStatus(success ? 'success' : 'error');
+    setIsTestingConnection(false);
+  };
+
   return (
     <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
       <Dialog.Trigger asChild>
@@ -51,7 +76,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
+        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-4">
             <Dialog.Title className="text-lg font-semibold">Settings</Dialog.Title>
             <Dialog.Close asChild>
@@ -61,22 +86,89 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
             </Dialog.Close>
           </div>
           
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
               <label htmlFor="apiKey" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 OpenAI API Key
               </label>
-              <Input
-                id="apiKey"
-                type="password"
-                value={tempApiKey}
-                onChange={(e) => setTempApiKey(e.target.value)}
-                placeholder="sk-..."
-                fullWidth
-              />
+              <div className="flex space-x-2">
+                <Input
+                  id="apiKey"
+                  type="password"
+                  value={tempApiKey}
+                  onChange={(e) => setTempApiKey(e.target.value)}
+                  placeholder="sk-..."
+                  fullWidth
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleTestConnection}
+                  isLoading={isTestingConnection}
+                >
+                  Test
+                </Button>
+              </div>
+              {connectionStatus !== 'untested' && (
+                <p className={`mt-1 text-sm ${
+                  connectionStatus === 'success' ? 'text-green-500' : 'text-red-500'
+                }`}>
+                  {connectionStatus === 'success' 
+                    ? 'Connection successful!' 
+                    : 'Connection failed. Please check your API key and try again.'}
+                </p>
+              )}
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 Your API key is stored locally and never sent to our servers.
               </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                GPT Model
+              </label>
+              <div className="space-y-2">
+                {availableModels.map((model) => (
+                  <div
+                    key={model.id}
+                    className={`p-3 rounded-md border cursor-pointer transition-colors relative ${
+                      selectedModelId === model.id
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
+                        : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                    onClick={() => setSelectedModelId(model.id)}
+                    onMouseEnter={() => setShowModelInfo(model.id)}
+                    onMouseLeave={() => setShowModelInfo(null)}
+                  >
+                    <div className="font-medium mb-1">{model.name}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      {model.description}
+                    </div>
+                    {showModelInfo === model.id && (
+                      <div className="absolute left-full ml-2 w-64 p-3 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+                        <div className="text-sm space-y-2">
+                          <p><strong>Context Window:</strong> {model.contextWindow?.toLocaleString()} tokens</p>
+                          <p><strong>Training Cutoff:</strong> {model.trainingCutoff}</p>
+                          <p><strong>Pricing:</strong></p>
+                          <ul className="list-disc pl-4">
+                            <li>Input: {model.inputPricing}</li>
+                            <li>Output: {model.outputPricing}</li>
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+                    <button 
+                      className="absolute top-2 right-2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowModelInfo(showModelInfo === model.id ? null : model.id);
+                      }}
+                    >
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div>
