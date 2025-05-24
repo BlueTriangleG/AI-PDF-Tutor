@@ -122,6 +122,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
                   onChange={(e) => setTempApiKey(e.target.value)}
                   placeholder="sk-..."
                   fullWidth
+                  className="text-gray-900 dark:text-white"
                 />
                 <Button
                   variant="outline"
@@ -135,7 +136,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
               </div>
               {connectionStatus !== 'untested' && (
                 <p className={`mt-1 text-sm ${
-                  connectionStatus === 'success' ? 'text-green-500' : 'text-red-500'
+                  connectionStatus === 'success' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                 }`}>
                   {connectionStatus === 'success' 
                     ? 'Connection successful!' 
@@ -227,9 +228,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
                     value={newPromptName}
                     onChange={(e) => setNewPromptName(e.target.value)}
                     fullWidth
+                    className="text-gray-900 dark:text-white"
                   />
                   <textarea
-                    className="w-full h-24 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 text-gray-900 dark:text-white"
+                    className="w-full h-24 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     placeholder="System prompt content..."
                     value={newPromptContent}
                     onChange={(e) => setNewPromptContent(e.target.value)}
