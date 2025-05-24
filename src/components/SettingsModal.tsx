@@ -122,7 +122,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
                   onChange={(e) => setTempApiKey(e.target.value)}
                   placeholder="sk-..."
                   fullWidth
-                  className="text-gray-900 dark:text-white"
+                  className="text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                 />
                 <Button
                   variant="outline"
@@ -130,6 +130,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
                   onClick={handleTestConnection}
                   isLoading={isTestingConnection}
                   disabled={!selectedModelId || !tempApiKey}
+                  className="text-gray-900 dark:text-white"
                 >
                   Test
                 </Button>
@@ -215,7 +216,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
                 <Button
                   variant="outline"
                   size="sm"
-                  className="mt-2"
+                  className="mt-2 text-gray-900 dark:text-white"
                   onClick={() => setIsAddingPrompt(true)}
                 >
                   <Plus className="h-4 w-4 mr-1" />
@@ -228,7 +229,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
                     value={newPromptName}
                     onChange={(e) => setNewPromptName(e.target.value)}
                     fullWidth
-                    className="text-gray-900 dark:text-white"
+                    className="text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                   />
                   <textarea
                     className="w-full h-24 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
@@ -237,10 +238,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
                     onChange={(e) => setNewPromptContent(e.target.value)}
                   />
                   <div className="flex space-x-2">
-                    <Button variant="outline" size="sm" onClick={() => setIsAddingPrompt(false)}>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => setIsAddingPrompt(false)}
+                      className="text-gray-900 dark:text-white"
+                    >
                       Cancel
                     </Button>
-                    <Button variant="primary" size="sm" onClick={handleAddPrompt}>
+                    <Button 
+                      variant="primary" 
+                      size="sm" 
+                      onClick={handleAddPrompt}
+                      className="text-white"
+                    >
                       Add Prompt
                     </Button>
                   </div>
@@ -251,9 +262,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
           
           <div className="mt-6 flex justify-end space-x-2">
             <Dialog.Close asChild>
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline" className="text-gray-900 dark:text-white">Cancel</Button>
             </Dialog.Close>
-            <Button variant="primary" onClick={handleSave}>Save Changes</Button>
+            <Button variant="primary" onClick={handleSave} className="text-white">Save Changes</Button>
           </div>
         </Dialog.Content>
       </Dialog.Portal>
