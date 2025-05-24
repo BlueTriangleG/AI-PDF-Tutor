@@ -34,7 +34,7 @@ const AppContent: React.FC = () => {
               <GraduationCap className="h-8 w-8 text-blue-500 mr-2" />
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">AI PDF Tutor</h1>
             </button>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               <SettingsModal apiKey={apiKey} onSaveApiKey={setApiKey} />
               <ThemeToggle />
             </div>
@@ -51,7 +51,7 @@ const AppContent: React.FC = () => {
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 Learn with your AI tutor
               </h2>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-gray-700 dark:text-gray-300">
                 Upload any PDF document to get started. Your AI tutor will help you understand it page-by-page.
               </p>
             </div>
@@ -78,7 +78,7 @@ const AppContent: React.FC = () => {
       {/* Footer */}
       <footer className="flex-shrink-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-center text-sm text-gray-700 dark:text-gray-300">
             © 2025 AI PDF Tutor. All rights reserved.
           </p>
         </div>

@@ -29,13 +29,13 @@ export const ThemeToggle: React.FC = () => {
       variant="ghost"
       size="sm"
       onClick={toggleTheme}
-      className="w-9 h-9 p-0"
+      className="w-10 h-10 p-0"
       aria-label="Toggle theme"
     >
       {theme === 'dark' ? (
-        <Moon className="h-4 w-4" />
+        <Moon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
       ) : (
-        <Sun className="h-4 w-4" />
+        <Sun className="h-5 w-5 text-gray-700 dark:text-gray-300" />
       )}
     </Button>
   );
