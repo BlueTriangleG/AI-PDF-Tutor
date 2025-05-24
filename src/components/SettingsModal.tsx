@@ -101,9 +101,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
         <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
         <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-4">
-            <Dialog.Title className="text-lg font-semibold">Settings</Dialog.Title>
+            <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white">Settings</Dialog.Title>
             <Dialog.Close asChild>
-              <button className="text-gray-400 hover:text-gray-500">
+              <button className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100">
                 <X className="h-4 w-4" />
               </button>
             </Dialog.Close>
@@ -111,7 +111,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
           
           <div className="space-y-6">
             <div>
-              <label htmlFor="apiKey" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label htmlFor="apiKey" className="block text-sm font-medium text-gray-900 dark:text-gray-300 mb-1">
                 OpenAI API Key
               </label>
               <div className="flex space-x-2">
@@ -142,14 +142,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
                     : 'Connection failed. Please check your API key and selected model.'}
                 </p>
               )}
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              <p className="mt-1 text-xs text-gray-700 dark:text-gray-300">
                 Your API key is stored locally and never sent to our servers.
               </p>
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label className="block text-sm font-medium text-gray-900 dark:text-gray-300">
                   GPT Model
                 </label>
                 <Button
@@ -159,11 +159,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
                   isLoading={isRefreshingModels}
                   className="h-8 w-8 p-0"
                 >
-                  <RefreshCw className="h-4 w-4" />
+                  <RefreshCw className="h-4 w-4 text-gray-700 dark:text-gray-300" />
                 </Button>
               </div>
               {filteredModels.length === 0 && (
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
                   No models available. Please check your API key and refresh the list.
                 </p>
               )}
@@ -178,8 +178,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
                     }`}
                     onClick={() => setSelectedModelId(model.id)}
                   >
-                    <div className="font-medium mb-1">{model.id}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                    <div className="font-medium text-gray-900 dark:text-white mb-1">{model.id}</div>
+                    <div className="text-sm text-gray-700 dark:text-gray-300">
                       {model.owned_by}
                     </div>
                   </div>
@@ -188,7 +188,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-900 dark:text-gray-300 mb-2">
                 AI Tutor Personality
               </label>
               <div className="space-y-2">
@@ -202,8 +202,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
                     }`}
                     onClick={() => setSelectedPromptId(prompt.id)}
                   >
-                    <div className="font-medium mb-1">{prompt.name}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                    <div className="font-medium text-gray-900 dark:text-white mb-1">{prompt.name}</div>
+                    <div className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
                       {prompt.prompt}
                     </div>
                   </div>
@@ -229,7 +229,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
                     fullWidth
                   />
                   <textarea
-                    className="w-full h-24 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900"
+                    className="w-full h-24 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 text-gray-900 dark:text-white"
                     placeholder="System prompt content..."
                     value={newPromptContent}
                     onChange={(e) => setNewPromptContent(e.target.value)}
