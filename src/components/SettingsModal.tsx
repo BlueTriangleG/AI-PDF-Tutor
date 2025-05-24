@@ -94,7 +94,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
     <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
       <Dialog.Trigger asChild>
         <Button variant="ghost" size="sm" className="w-10 h-10 p-0">
-          <Settings className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+          <Settings className="h-5 w-5" />
         </Button>
       </Dialog.Trigger>
       <Dialog.Portal>
@@ -103,7 +103,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
           <div className="flex items-center justify-between mb-4">
             <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white">Settings</Dialog.Title>
             <Dialog.Close asChild>
-              <button className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100">
+              <button className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                 <X className="h-4 w-4" />
               </button>
             </Dialog.Close>
@@ -142,7 +142,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
                     : 'Connection failed. Please check your API key and selected model.'}
                 </p>
               )}
-              <p className="mt-1 text-xs text-gray-700 dark:text-gray-300">
+              <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
                 Your API key is stored locally and never sent to our servers.
               </p>
             </div>
@@ -159,11 +159,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
                   isLoading={isRefreshingModels}
                   className="h-8 w-8 p-0"
                 >
-                  <RefreshCw className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+                  <RefreshCw className="h-4 w-4" />
                 </Button>
               </div>
               {filteredModels.length === 0 && (
-                <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                   No models available. Please check your API key and refresh the list.
                 </p>
               )}
@@ -179,7 +179,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
                     onClick={() => setSelectedModelId(model.id)}
                   >
                     <div className="font-medium text-gray-900 dark:text-white mb-1">{model.id}</div>
-                    <div className="text-sm text-gray-700 dark:text-gray-300">
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
                       {model.owned_by}
                     </div>
                   </div>
@@ -203,7 +203,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
                     onClick={() => setSelectedPromptId(prompt.id)}
                   >
                     <div className="font-medium text-gray-900 dark:text-white mb-1">{prompt.name}</div>
-                    <div className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
+                    <div className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
                       {prompt.prompt}
                     </div>
                   </div>
