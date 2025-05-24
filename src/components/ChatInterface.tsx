@@ -17,13 +17,13 @@ const DifficultyToggle: React.FC = () => {
   
   return (
     <div className="flex items-center space-x-2">
-      <span className="text-sm text-gray-500 dark:text-gray-400">Difficulty:</span>
+      <span className="text-sm text-gray-600 dark:text-gray-400">Difficulty:</span>
       <div className="flex rounded-md overflow-hidden border border-gray-300 dark:border-gray-700">
         <button
           className={`px-3 py-1 text-xs font-medium ${
             explanationLevel === 'eli5'
               ? 'bg-blue-500 text-white'
-              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
           }`}
           onClick={() => setExplanationLevel('eli5')}
         >
@@ -33,7 +33,7 @@ const DifficultyToggle: React.FC = () => {
           className={`px-3 py-1 text-xs font-medium ${
             explanationLevel === 'highlevel'
               ? 'bg-blue-500 text-white'
-              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
           }`}
           onClick={() => setExplanationLevel('highlevel')}
         >
@@ -43,7 +43,7 @@ const DifficultyToggle: React.FC = () => {
           className={`px-3 py-1 text-xs font-medium ${
             explanationLevel === 'detailed'
               ? 'bg-blue-500 text-white'
-              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
           }`}
           onClick={() => setExplanationLevel('detailed')}
         >
@@ -119,11 +119,11 @@ const TutorSelector: React.FC = () => {
           <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
           <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-4">
-              <Dialog.Title className="text-lg font-semibold">
+              <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white">
                 {editingPrompt ? 'Edit Tutor' : 'Select AI Tutor'}
               </Dialog.Title>
               <Dialog.Close asChild>
-                <button className="text-gray-400 hover:text-gray-500">
+                <button className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                   <X className="h-4 w-4" />
                 </button>
               </Dialog.Close>
@@ -145,13 +145,13 @@ const TutorSelector: React.FC = () => {
                         className="cursor-pointer pr-8"
                         onClick={() => handlePromptSelect(prompt.id)}
                       >
-                        <div className="font-medium mb-1">{prompt.name}</div>
+                        <div className="font-medium text-gray-900 dark:text-white mb-1">{prompt.name}</div>
                         <div className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
                           {prompt.prompt}
                         </div>
                       </div>
                       <button
-                        className="absolute top-2 right-2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        className="absolute top-2 right-2 p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                         onClick={() => handleEditPrompt(prompt)}
                       >
                         <Pencil className="h-4 w-4" />
@@ -163,7 +163,7 @@ const TutorSelector: React.FC = () => {
               
               {editingPrompt ? (
                 <div>
-                  <h3 className="text-sm font-medium mb-2">Edit Tutor</h3>
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Edit Tutor</h3>
                   <div className="space-y-3">
                     <Input
                       placeholder="Tutor Name"
@@ -172,7 +172,7 @@ const TutorSelector: React.FC = () => {
                       fullWidth
                     />
                     <textarea
-                      className="w-full h-24 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900"
+                      className="w-full h-24 px-3 py-2 text-sm border border-gray-300 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700"
                       placeholder="System prompt content..."
                       value={newPromptContent}
                       onChange={(e) => setNewPromptContent(e.target.value)}
@@ -198,7 +198,7 @@ const TutorSelector: React.FC = () => {
                 </div>
               ) : (
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                  <h3 className="text-sm font-medium mb-2">Create Custom Tutor</h3>
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Create Custom Tutor</h3>
                   <div className="space-y-3">
                     <Input
                       placeholder="Tutor Name"
@@ -207,7 +207,7 @@ const TutorSelector: React.FC = () => {
                       fullWidth
                     />
                     <textarea
-                      className="w-full h-24 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900"
+                      className="w-full h-24 px-3 py-2 text-sm border border-gray-300 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700"
                       placeholder="System prompt content..."
                       value={newPromptContent}
                       onChange={(e) => setNewPromptContent(e.target.value)}
@@ -243,7 +243,7 @@ const Message: React.FC<{ message: MessageType }> = ({ message }) => {
         className={`max-w-[80%] rounded-lg px-4 py-2 animate-message ${
           message.role === 'user'
             ? 'bg-blue-500 text-white rounded-tr-none animate-slide-left'
-            : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-tl-none animate-slide-right'
+            : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-tl-none animate-slide-right'
         }`}
       >
         <div className="flex items-center mb-1">
@@ -363,8 +363,8 @@ export const ChatInterface: React.FC = () => {
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center">
             <Bot className="h-16 w-16 text-blue-500 mb-4" />
-            <h3 className="text-lg font-medium mb-2">Your AI Tutor is Ready</h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Your AI Tutor is Ready</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
               Upload a PDF and select "Explain This Page" to start learning, or ask a question below.
             </p>
           </div>
