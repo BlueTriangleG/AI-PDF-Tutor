@@ -48,7 +48,8 @@ export const generateAIResponse = async (
   level: 'eli5' | 'highlevel' | 'detailed',
   apiKey: string,
   systemPrompt: string,
-  model: string
+  model: string,
+  messageHistory: { role: 'user' | 'assistant'; content: string }[] = []
 ): Promise<string> => {
   if (!apiKey) {
     throw new Error('OpenAI API key is required. Please add it in Settings.');
@@ -58,18 +59,21 @@ export const generateAIResponse = async (
     const client = new OpenAI({ apiKey, dangerouslyAllowBrowser: true });
     const prompt = getPromptForLevel(level, text);
     
+    const messages = [
+      {
+        role: 'system',
+        content: systemPrompt,
+      },
+      ...messageHistory,
+      {
+        role: 'user',
+        content: prompt,
+      },
+    ];
+
     const response = await client.chat.completions.create({
       model,
-      messages: [
-        {
-          role: 'system',
-          content: systemPrompt,
-        },
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
+      messages: messages as any[],
       temperature: 0.7,
     });
 

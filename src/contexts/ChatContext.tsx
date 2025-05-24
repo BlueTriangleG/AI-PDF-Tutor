@@ -90,7 +90,21 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (role === 'user') {
       setIsLoading(true);
       try {
-        const response = await generateAIResponse(content, explanationLevel, apiKey, systemPrompt.prompt, selectedModel);
+        // Convert messages to the format expected by the API
+        const messageHistory = messages.map(msg => ({
+          role: msg.role,
+          content: msg.content
+        }));
+
+        const response = await generateAIResponse(
+          content,
+          explanationLevel,
+          apiKey,
+          systemPrompt.prompt,
+          selectedModel,
+          messageHistory
+        );
+        
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
@@ -130,7 +144,21 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setMessages((prevMessages) => [...prevMessages, initialMessage]);
     
     try {
-      const response = await generateAIResponse(pageText, explanationLevel, apiKey, systemPrompt.prompt, selectedModel);
+      // Convert messages to the format expected by the API
+      const messageHistory = messages.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+
+      const response = await generateAIResponse(
+        pageText,
+        explanationLevel,
+        apiKey,
+        systemPrompt.prompt,
+        selectedModel,
+        messageHistory
+      );
+      
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
