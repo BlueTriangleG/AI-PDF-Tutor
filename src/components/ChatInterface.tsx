@@ -240,10 +240,10 @@ const Message: React.FC<{ message: MessageType }> = ({ message }) => {
       }`}
     >
       <div
-        className={`max-w-[80%] rounded-lg px-4 py-2 ${
+        className={`max-w-[80%] rounded-lg px-4 py-2 animate-message ${
           message.role === 'user'
-            ? 'bg-blue-500 text-white rounded-tr-none'
-            : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-tl-none'
+            ? 'bg-blue-500 text-white rounded-tr-none animate-slide-left'
+            : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-tl-none animate-slide-right'
         }`}
       >
         <div className="flex items-center mb-1">
