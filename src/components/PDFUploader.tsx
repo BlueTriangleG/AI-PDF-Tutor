@@ -85,7 +85,7 @@ export const PDFUploader: React.FC = () => {
           {isUploading ? (
             <div className="animate-pulse">
               <div className="h-12 w-12 rounded-full border-4 border-blue-500 border-t-transparent animate-spin mb-4" />
-              <p className="text-gray-600 dark:text-gray-400">Processing PDF...</p>
+              <p className="text-gray-700 dark:text-gray-300">Processing PDF...</p>
             </div>
           ) : (
             <>
@@ -96,8 +96,8 @@ export const PDFUploader: React.FC = () => {
                   <Upload className="h-6 w-6 text-blue-500 dark:text-blue-400" />
                 )}
               </div>
-              <p className="text-lg font-medium mb-2">Upload your PDF</p>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
+              <p className="text-lg font-medium mb-2 text-gray-900 dark:text-white">Upload your PDF</p>
+              <p className="text-gray-700 dark:text-gray-300 mb-4">
                 Drag and drop your file here, or click to browse
               </p>
               <Button variant="primary" size="sm" type="button">

@@ -93,8 +93,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ apiKey, onSaveApiK
   return (
     <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
       <Dialog.Trigger asChild>
-        <Button variant="ghost" size="sm" className="w-9 h-9 p-0">
-          <Settings className="h-4 w-4" />
+        <Button variant="ghost" size="sm" className="w-10 h-10 p-0">
+          <Settings className="h-5 w-5 text-gray-700 dark:text-gray-300" />
         </Button>
       </Dialog.Trigger>
       <Dialog.Portal>
