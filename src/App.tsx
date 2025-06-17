@@ -1,26 +1,26 @@
-import React from 'react';
-import { PDFProvider } from './contexts/PDFContext';
-import { ChatProvider } from './contexts/ChatContext';
-import { PDFUploader } from './components/PDFUploader';
-import { PDFViewer } from './components/PDFViewer';
-import { PDFThumbnails } from './components/PDFThumbnails';
-import { PDFHistory } from './components/PDFHistory';
-import { ChatInterface } from './components/ChatInterface';
-import { ThemeToggle } from './components/ThemeToggle';
-import { SettingsModal } from './components/SettingsModal';
-import { usePDF } from './contexts/PDFContext';
-import { useChat } from './contexts/ChatContext';
-import { BookOpen, GraduationCap } from 'lucide-react';
+import React from 'react'
+import { PDFProvider } from './contexts/PDFContext'
+import { ChatProvider } from './contexts/ChatContext'
+import { PDFUploader } from './components/PDFUploader'
+import { PDFViewer } from './components/PDFViewer'
+import { PDFThumbnails } from './components/PDFThumbnails'
+import { PDFHistory } from './components/PDFHistory'
+import { ChatInterface } from './components/ChatInterface'
+import { ThemeToggle } from './components/ThemeToggle'
+import { SettingsModal } from './components/SettingsModal'
+import { usePDF } from './contexts/PDFContext'
+import { useChat } from './contexts/ChatContext'
+import { BookOpen, GraduationCap } from 'lucide-react'
 
 const AppContent: React.FC = () => {
-  const { document, clearDocument, updateHistory } = usePDF();
-  const { apiKey, setApiKey, messages } = useChat();
-  
+  const { document, clearDocument, updateHistory } = usePDF()
+  const { apiKey, setApiKey, messages } = useChat()
+
   const handleHomeClick = () => {
-    updateHistory(messages);
-    clearDocument();
-  };
-  
+    updateHistory(messages)
+    clearDocument()
+  }
+
   return (
     <div className="flex flex-col h-screen bg-gray-100 dark:bg-gray-900">
       {/* Header */}
@@ -29,10 +29,11 @@ const AppContent: React.FC = () => {
           <div className="flex items-center justify-between">
             <button
               onClick={handleHomeClick}
-              className="flex items-center hover:opacity-80 transition-opacity"
-            >
+              className="flex items-center hover:opacity-80 transition-opacity">
               <GraduationCap className="h-8 w-8 text-blue-500 mr-2" />
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">AI PDF Tutor</h1>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                AI PDF Tutor
+              </h1>
             </button>
             <div className="flex items-center space-x-3">
               <SettingsModal apiKey={apiKey} onSaveApiKey={setApiKey} />
@@ -41,7 +42,7 @@ const AppContent: React.FC = () => {
           </div>
         </div>
       </header>
-      
+
       {/* Main Content */}
       <main className="flex-1 overflow-hidden container mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {!document ? (
@@ -52,7 +53,8 @@ const AppContent: React.FC = () => {
                 Learn with your AI tutor
               </h2>
               <p className="text-gray-700 dark:text-gray-300">
-                Upload any PDF document to get started. Your AI tutor will help you understand it page-by-page.
+                Upload any PDF document to get started. Your AI tutor will help
+                you understand it page-by-page.
               </p>
             </div>
             <PDFUploader />
@@ -74,7 +76,7 @@ const AppContent: React.FC = () => {
           </div>
         )}
       </main>
-      
+
       {/* Footer */}
       <footer className="flex-shrink-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -84,8 +86,8 @@ const AppContent: React.FC = () => {
         </div>
       </footer>
     </div>
-  );
-};
+  )
+}
 
 function App() {
   return (
@@ -94,7 +96,7 @@ function App() {
         <AppContent />
       </PDFProvider>
     </ChatProvider>
-  );
+  )
 }
 
-export default App;
+export default App
