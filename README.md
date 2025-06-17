@@ -115,6 +115,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📬 Contact
 
-Your Name - [@Gaoyuan Hao](https://twitter.com/gaoyuan Hao) - hgy13952044339@outlook.com
-
-Project Link: [https://github.com/yourusername/ai-pdf-tutor](https://github.com/yourusername/ai-pdf-tutor)
+Gavin Hao - hgy13952044339@outlook.com
