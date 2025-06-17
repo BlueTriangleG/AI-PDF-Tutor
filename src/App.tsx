@@ -1,25 +1,25 @@
-import React from 'react'
-import { PDFProvider } from './contexts/PDFContext'
-import { ChatProvider } from './contexts/ChatContext'
-import { PDFUploader } from './components/PDFUploader'
-import { PDFViewer } from './components/PDFViewer'
-import { PDFThumbnails } from './components/PDFThumbnails'
-import { PDFHistory } from './components/PDFHistory'
-import { ChatInterface } from './components/ChatInterface'
-import { ThemeToggle } from './components/ThemeToggle'
-import { SettingsModal } from './components/SettingsModal'
-import { usePDF } from './contexts/PDFContext'
-import { useChat } from './contexts/ChatContext'
-import { BookOpen, GraduationCap } from 'lucide-react'
+import React from "react";
+import { PDFProvider } from "./contexts/PDFContext";
+import { ChatProvider } from "./contexts/ChatContext";
+import { PDFUploader } from "./components/PDFUploader";
+import { PDFViewer } from "./components/PDFViewer";
+import { PDFThumbnails } from "./components/PDFThumbnails";
+import { PDFHistory } from "./components/PDFHistory";
+import { ChatInterface } from "./components/ChatInterface";
+import { ThemeToggle } from "./components/ThemeToggle";
+import { SettingsModal } from "./components/SettingsModal";
+import { usePDF } from "./contexts/PDFContext";
+import { useChat } from "./contexts/ChatContext";
+import { BookOpen, GraduationCap } from "lucide-react";
 
 const AppContent: React.FC = () => {
-  const { document, clearDocument, updateHistory } = usePDF()
-  const { apiKey, setApiKey, messages } = useChat()
+  const { document, clearDocument, updateHistory } = usePDF();
+  const { apiKey, setApiKey, messages } = useChat();
 
   const handleHomeClick = () => {
-    updateHistory(messages)
-    clearDocument()
-  }
+    updateHistory(messages);
+    clearDocument();
+  };
 
   return (
     <div className="flex flex-col h-screen bg-gray-100 dark:bg-gray-900">
@@ -86,8 +86,8 @@ const AppContent: React.FC = () => {
         </div>
       </footer>
     </div>
-  )
-}
+  );
+};
 
 function App() {
   return (
@@ -96,7 +96,7 @@ function App() {
         <AppContent />
       </PDFProvider>
     </ChatProvider>
-  )
+  );
 }
 
-export default App
+export default App;
