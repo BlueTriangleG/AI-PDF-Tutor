@@ -8,7 +8,22 @@
 
 A cross-platform personal AI tutor that ingests PDFs, explains them page-by-page, and holds an interactive Q&A chat.
 
-![AI PDF Tutor Screenshot](https://images.pexels.com/photos/4050315/pexels-photo-4050315.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2)
+## 🖼️ Project Demo
+
+### Homepage
+
+![Homepage](public/homepage.png)
+
+### PDF Content View
+
+![PDF Content 1](public/content1.png)
+![PDF Content 2](public/content2.png)
+
+### Settings Panel
+
+![Settings Panel](public/setting1.png)
+
+---
 
 ## 🌟 Features
 
@@ -32,17 +47,20 @@ A cross-platform personal AI tutor that ingests PDFs, explains them page-by-page
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/yourusername/ai-pdf-tutor.git
    cd ai-pdf-tutor
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```
 
 3. Create a `.env` file in the project root:
+
    ```env
    VITE_OPENAI_API_KEY=your_api_key_here
    ```

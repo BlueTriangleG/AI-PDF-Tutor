@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react'
-import * as Dialog from '@radix-ui/react-dialog'
-import { Settings, X, Plus, Info, RefreshCw } from 'lucide-react'
-import { Button } from './ui/Button'
-import { Input } from './ui/Input'
-import { SystemPromptTemplate } from '../types'
-import { useChat } from '../contexts/ChatContext'
+import React, { useState, useEffect } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
+import { Settings, X, Plus, Info, RefreshCw } from "lucide-react";
+import { Button } from "./ui/Button";
+import { Input } from "./ui/Input";
+import { SystemPromptTemplate } from "../types";
+import { useChat } from "../contexts/ChatContext";
 
 interface SettingsModalProps {
-  apiKey: string
-  onSaveApiKey: (key: string) => void
+  apiKey: string;
+  onSaveApiKey: (key: string) => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -25,42 +25,42 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     testApiConnection,
     availableModels,
     refreshModels,
-  } = useChat()
+  } = useChat();
 
-  const [isOpen, setIsOpen] = useState(false)
-  const [tempApiKey, setTempApiKey] = useState(apiKey)
-  const [selectedPromptId, setSelectedPromptId] = useState(systemPrompt.id)
+  const [isOpen, setIsOpen] = useState(false);
+  const [tempApiKey, setTempApiKey] = useState(apiKey);
+  const [selectedPromptId, setSelectedPromptId] = useState(systemPrompt.id);
   const [selectedModelId, setSelectedModelId] = useState(
-    selectedModel || 'gpt-3.5-turbo'
-  )
-  const [isAddingPrompt, setIsAddingPrompt] = useState(false)
-  const [newPromptName, setNewPromptName] = useState('')
-  const [newPromptContent, setNewPromptContent] = useState('')
-  const [showModelInfo, setShowModelInfo] = useState<string | null>(null)
-  const [isTestingConnection, setIsTestingConnection] = useState(false)
+    selectedModel || "gpt-3.5-turbo"
+  );
+  const [isAddingPrompt, setIsAddingPrompt] = useState(false);
+  const [newPromptName, setNewPromptName] = useState("");
+  const [newPromptContent, setNewPromptContent] = useState("");
+  const [showModelInfo, setShowModelInfo] = useState<string | null>(null);
+  const [isTestingConnection, setIsTestingConnection] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<
-    'untested' | 'success' | 'error'
-  >('untested')
-  const [connectionError, setConnectionError] = useState<string>('')
-  const [isRefreshingModels, setIsRefreshingModels] = useState(false)
+    "untested" | "success" | "error"
+  >("untested");
+  const [connectionError, setConnectionError] = useState<string>("");
+  const [isRefreshingModels, setIsRefreshingModels] = useState(false);
 
   useEffect(() => {
     if (isOpen && tempApiKey) {
-      refreshModels()
+      refreshModels();
     }
-  }, [isOpen, tempApiKey])
+  }, [isOpen, tempApiKey]);
 
   const handleSave = () => {
-    onSaveApiKey(tempApiKey)
+    onSaveApiKey(tempApiKey);
     const selectedPrompt = availablePrompts.find(
       (p) => p.id === selectedPromptId
-    )
+    );
     if (selectedPrompt) {
-      setSystemPrompt(selectedPrompt)
+      setSystemPrompt(selectedPrompt);
     }
-    setSelectedModel(selectedModelId)
-    setIsOpen(false)
-  }
+    setSelectedModel(selectedModelId);
+    setIsOpen(false);
+  };
 
   const handleAddPrompt = () => {
     if (newPromptName && newPromptContent) {
@@ -68,101 +68,101 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         id: Date.now().toString(),
         name: newPromptName,
         prompt: newPromptContent,
-      })
-      setNewPromptName('')
-      setNewPromptContent('')
-      setIsAddingPrompt(false)
+      });
+      setNewPromptName("");
+      setNewPromptContent("");
+      setIsAddingPrompt(false);
     }
-  }
+  };
 
   const handleTestConnection = async () => {
-    if (!tempApiKey || !tempApiKey.startsWith('sk-')) {
-      setConnectionStatus('error')
+    if (!tempApiKey || !tempApiKey.startsWith("sk-")) {
+      setConnectionStatus("error");
       setConnectionError(
         'Please enter a valid OpenAI API key (starts with "sk-").'
-      )
-      return
+      );
+      return;
     }
 
-    setIsTestingConnection(true)
-    setConnectionStatus('untested')
-    setConnectionError('')
+    setIsTestingConnection(true);
+    setConnectionStatus("untested");
+    setConnectionError("");
 
     try {
       // First, try to refresh models with the new API key
       if (filteredModels.length === 0) {
-        await handleRefreshModels()
+        await handleRefreshModels();
       }
 
       // Use gpt-3.5-turbo as default if no model selected
-      const modelToTest = selectedModelId || 'gpt-3.5-turbo'
+      const modelToTest = selectedModelId || "gpt-3.5-turbo";
 
-      const success = await testApiConnection(tempApiKey, modelToTest)
-      setConnectionStatus(success ? 'success' : 'error')
+      const success = await testApiConnection(tempApiKey, modelToTest);
+      setConnectionStatus(success ? "success" : "error");
       if (!success) {
         setConnectionError(
-          'Connection failed. Please check your API key and internet connection. See browser console for detailed errors.'
-        )
+          "Connection failed. Please check your API key and internet connection. See browser console for detailed errors."
+        );
       } else {
         // If successful and no model was selected, select gpt-3.5-turbo
         if (!selectedModelId) {
-          setSelectedModelId('gpt-3.5-turbo')
+          setSelectedModelId("gpt-3.5-turbo");
         }
       }
     } catch (error) {
-      setConnectionStatus('error')
+      setConnectionStatus("error");
       setConnectionError(
         `Connection test failed: ${
-          error instanceof Error ? error.message : 'Unknown error'
+          error instanceof Error ? error.message : "Unknown error"
         }`
-      )
+      );
     }
 
-    setIsTestingConnection(false)
-  }
+    setIsTestingConnection(false);
+  };
 
   const handleRefreshModels = async () => {
-    if (!tempApiKey || !tempApiKey.startsWith('sk-')) {
-      return
+    if (!tempApiKey || !tempApiKey.startsWith("sk-")) {
+      return;
     }
 
-    setIsRefreshingModels(true)
+    setIsRefreshingModels(true);
 
     // Temporarily set the API key to enable model refresh
-    const originalApiKey = apiKey
-    onSaveApiKey(tempApiKey)
+    const originalApiKey = apiKey;
+    onSaveApiKey(tempApiKey);
 
     try {
-      await refreshModels()
+      await refreshModels();
     } catch (error) {
-      console.error('Failed to refresh models:', error)
+      console.error("Failed to refresh models:", error);
     } finally {
       // Restore original API key if it was different
       if (originalApiKey !== tempApiKey) {
-        onSaveApiKey(originalApiKey)
+        onSaveApiKey(originalApiKey);
       }
-      setIsRefreshingModels(false)
+      setIsRefreshingModels(false);
     }
-  }
+  };
 
   const filteredModels = Array.isArray(availableModels)
     ? availableModels
         .filter(
           (model) =>
-            model.id.startsWith('gpt-') && !model.id.includes('instruct')
+            model.id.startsWith("gpt-") && !model.id.includes("instruct")
         )
         .sort((a, b) => a.id.localeCompare(b.id))
-    : []
+    : [];
 
   // Auto-select gpt-3.5-turbo if no model is selected and models are available
   React.useEffect(() => {
     if (filteredModels.length > 0 && !selectedModelId) {
       const defaultModel =
-        filteredModels.find((m) => m.id === 'gpt-3.5-turbo') ||
-        filteredModels[0]
-      setSelectedModelId(defaultModel.id)
+        filteredModels.find((m) => m.id === "gpt-3.5-turbo") ||
+        filteredModels[0];
+      setSelectedModelId(defaultModel.id);
     }
-  }, [filteredModels, selectedModelId])
+  }, [filteredModels, selectedModelId]);
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
@@ -210,17 +210,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   Test
                 </Button>
               </div>
-              {connectionStatus !== 'untested' && (
+              {connectionStatus !== "untested" && (
                 <p
                   className={`mt-1 text-sm ${
-                    connectionStatus === 'success'
-                      ? 'text-green-600 dark:text-green-400'
-                      : 'text-red-600 dark:text-red-400'
+                    connectionStatus === "success"
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-red-600 dark:text-red-400"
                   }`}>
-                  {connectionStatus === 'success'
-                    ? 'Connection successful!'
+                  {connectionStatus === "success"
+                    ? "Connection successful!"
                     : connectionError ||
-                      'Connection failed. Please check your API key and selected model.'}
+                      "Connection failed. Please check your API key and selected model."}
                 </p>
               )}
               <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
@@ -238,16 +238,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   size="sm"
                   onClick={handleRefreshModels}
                   isLoading={isRefreshingModels}
-                  disabled={!tempApiKey || !tempApiKey.startsWith('sk-')}
+                  disabled={!tempApiKey || !tempApiKey.startsWith("sk-")}
                   className="h-8 w-8 p-0">
                   <RefreshCw className="h-4 w-4" />
                 </Button>
               </div>
               {filteredModels.length === 0 && (
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  {!tempApiKey || !tempApiKey.startsWith('sk-')
-                    ? 'Enter your API key above and click refresh to load models.'
-                    : 'No models available. Click refresh to load models.'}
+                  {!tempApiKey || !tempApiKey.startsWith("sk-")
+                    ? "Enter your API key above and click refresh to load models."
+                    : "No models available. Click refresh to load models."}
                 </p>
               )}
               <div className="space-y-2">
@@ -256,8 +256,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     key={model.id}
                     className={`p-3 rounded-md border cursor-pointer transition-colors relative ${
                       selectedModelId === model.id
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
-                        : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30"
+                        : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
                     }`}
                     onClick={() => setSelectedModelId(model.id)}>
                     <div className="font-medium text-gray-900 dark:text-white mb-1">
@@ -281,8 +281,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     key={prompt.id}
                     className={`p-3 rounded-md border cursor-pointer transition-colors ${
                       selectedPromptId === prompt.id
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
-                        : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30"
+                        : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
                     }`}
                     onClick={() => setSelectedPromptId(prompt.id)}>
                     <div className="font-medium text-gray-900 dark:text-white mb-1">
@@ -348,5 +348,5 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
-  )
-}
+  );
+};
